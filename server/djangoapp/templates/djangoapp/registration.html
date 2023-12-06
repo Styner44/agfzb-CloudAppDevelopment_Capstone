@@ -1,11 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     {% load static %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
-    <body>
-    <!--Add a registration form here -->
-    </body>
+
+<body style="min-height: 100vh">
+    <div class="container h-100">
+        <div class="row h-100 mt-5 mb-5">
+            <form class="m-auto w-75" method="post">
+                {% csrf_token %}
+                <div class="jumbotron text-center bg-dark text-white">
+                    <h2>Registration</h2>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" placeholder="Email address: user@mail.com" name="email" id="email">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Username: michaeljamie" name="username"
+                        id="username">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="First name: Michael" name="first_name"
+                        id="first_name">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Last name: Jamie" name="last_name"
+                        id="last_name">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="Password: abc123" name="pwd">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="Confirm Password: abc123" i name="c-pwd">
+                </div>
+                {% include "djangoapp/partials/form-response.html" %}
+                <button type="submit" class="btn btn-dark">Submit</button>
+            </form>
+        </div>
+    </div>
+</body>
+
 </html>
