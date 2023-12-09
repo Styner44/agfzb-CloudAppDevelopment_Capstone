@@ -54,10 +54,10 @@ def main(param_dict):
     return reviews
 
 
-credentials = {
-    "COUCH_USERNAME": "41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix",
-    "IAM_API_KEY": "Udq3_mK0zxdnBA4cx2bBE045ZYD2BtzGF5tGT20fFKOh",
-    "dealership_id": 123  # Replace with the actual dealership ID
-}
+# credentials = {
+#     "COUCH_USERNAME": "41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix",
+#     "IAM_API_KEY": "Udq3_mK0zxdnBA4cx2bBE045ZYD2BtzGF5tGT20fFKOh",
+#     "dealership_id": 123  # Replace with the actual dealership ID
+# }
 
 print(main(credentials))
