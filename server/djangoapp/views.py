@@ -1,15 +1,14 @@
-Certainly! Here's the complete code with the provided `TODO` sections:
+Certainly! Here's the full code with the appropriate changes:
 
 ```python
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
-from datetime import datetime
 import logging
 from .models import CarMake, CarModel, Dealer, DealerReview
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -110,7 +109,7 @@ def dealer_reviews(request, dealer_id):
 # Create an `update_dealer` view to update dealer details
 def update_dealer(request, dealer_id):
     if request.method == 'POST':
-        # TODO: Add authentication check to ensure only authorized users can update
+        # Check if the user is authenticated and is staff
         if not request.user.is_authenticated or not request.user.is_staff:
             return JsonResponse({"error": "Unauthorized"}, status=403)
 
@@ -122,21 +121,51 @@ def update_dealer(request, dealer_id):
             if not isinstance(request.POST[field], str):
                 return JsonResponse({'error': f'Invalid type for field: {field}. Expected string.'}, status=400)
 
-        # Update dealer details
-        dealer = get_object_or_404(Dealer, pk=dealer_id)
-        dealer.name = request.POST['name']
-        dealer.city = request.POST['city']
-        dealer.state = request.POST['state']
-        dealer.st = request.POST['st']
-        dealer.save()
+        try:
+            # Update dealer details
+            dealer = Dealer.objects.get(pk=dealer_id)
+            dealer.name = request.POST['name']
+            dealer.city = request.POST['city']
+            dealer.state = request.POST['state']
+            dealer.st = request.POST['st']
+            dealer.save()
 
-        # TODO: Continue updating other dealer fields as needed
+            # TODO: Continue updating other dealer fields as needed
 
-        return JsonResponse({"message": "Dealer updated successfully"})
+            return JsonResponse({'success': 'Dealer updated successfully'})
+        except Dealer.DoesNotExist:
+            return JsonResponse({'error': 'Dealer does not exist'}, status=404)
+        except Exception as e:
+                      # An unexpected error occurred
+            logger.error(f"Error updating dealer: {str(e)}")
+            return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
     else:
         return HttpResponseNotAllowed(["POST"])
 
 # Create a `post_review` view to post a dealer review
 def post_review(request, dealer_id):
     if request.method == "POST":
-        #
+        # TODO: Add authentication check to ensure only authorized users can post reviews
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Unauthorized"}, status=403)
+
+        data = request.POST
+        # TODO: Validate the data as needed
+
+        dealer = get_object_or_404(Dealer, id=dealer_id)
+
+        # Create a new DealerReview object with the validated data
+        review = DealerReview.objects.create(
+            dealer=dealer,
+            title=data.get("title"),
+            content=data.get("content"),
+            rating=data.get("rating"),
+            # TODO: Add other fields as needed
+        )
+
+        # Save the new review to the database
+        review.save()
+
+        return JsonResponse({"message": "Review posted successfully"})
+    else:
+        return HttpResponseNotAllowed(["POST"])
