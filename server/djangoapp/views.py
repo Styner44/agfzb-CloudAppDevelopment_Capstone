@@ -2,20 +2,19 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect, reverse
-# from .models import related models
+from .models import CarMake, CarModel  # added this line
 # from .restapis import related methods
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
 import logging
 import json
+from django.http import JsonResponse  # added this line
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-
 # Create your views here.
-
 
 # Create an `about` view to render a static about page
 def about(request):
@@ -23,7 +22,6 @@ def about(request):
         "title": "about us"
     }
     return render(request, "djangoapp/about.html", context)
-
 
 # Create a `contact` view to return a static contact page
 def contact(request):
@@ -55,7 +53,6 @@ def login_request(request):
 def logout_request(request):
     logout(request)
     return redirect("djangoapp:login")
-# ...
 
 # Create a `registration_request` view to handle sign up request
 def registration_request(request):
@@ -95,15 +92,12 @@ def registration_request(request):
         context["message"] = message
         return render(request, "djangoapp/registration.html", context)
 
-
-
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
     context = {}
     context["title"] = "Dealership Review"
     if request.method == "GET":
         return render(request, 'djangoapp/index.html', context)
-
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
 # def get_dealer_details(request, dealer_id):
@@ -113,3 +107,27 @@ def get_dealerships(request):
 # def add_review(request, dealer_id):
 # ...
 
+# Create a `car_models` view to get a list of all car models
+def car_models(request):
+    models = CarModel.objects.all()
+    data = {"car_models": list(models.values("name", "description"))}
+    return JsonResponse(data)
+
+# Create a `dealer_reviews` view to get reviews of a dealer
+def dealer_reviews(request, dealer_id):
+    # Assuming you have a DealerReview model with a foreign key to the Dealer model
+    reviews = DealerReview.objects.filter(dealer_id=dealer_id)
+    data = {"dealer_reviews": list(reviews.values())}
+    return JsonResponse(data)
+
+# Create a `update_dealer` view to update dealer details
+def update_dealer(request, dealer_id):
+    # This would be a POST request, you would get the new data from request.POST
+    # You would need to validate this data and then use it to update the dealer
+    pass
+
+# Create a `post_review` view to post a dealer review
+def post_review(request, dealer_id):
+    # This would be a POST request, you would get the review data from request.POST
+    # You would need to validate this data and then use it to create a new DealerReview object
+    pass
