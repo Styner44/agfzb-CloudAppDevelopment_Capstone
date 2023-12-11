@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils.timezone import now
 
-# Create your models here.
-
 # Car Make model with fields: Name, Description, Country, Founded Date, etc.
 class CarMake(models.Model):
     name = models.CharField(max_length=255)
