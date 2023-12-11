@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 import logging
-from .models import CarMake, CarModel, Dealer, DealerReview
+from .models import CarMake, CarModel, CarDealer, DealerReview
 from django.shortcuts import redirect
 
 # Get an instance of a logger
