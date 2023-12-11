@@ -33,6 +33,41 @@ app.get('/api/dealership', async (req, res) => {
     }
 });
 
+// Parse JSON bodies
+app.use(express.json());
+
+// GET endpoint for reviews
+app.get('/api/review', async (req, res) => {
+    try {
+        const dealershipId = req.query.dealershipId;
+        const response = await cloudant.postAllDocs({
+            db: 'reviews',
+            includeDocs: true
+        });
+        let reviews = response.result.rows.map(row => row.doc);
+        if (dealershipId) {
+            reviews = reviews.filter(review => review.dealershipId === dealershipId);
+        }
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
+
+// POST endpoint for reviews
+app.post('/api/review', async (req, res) => {
+    try {
+        const review = req.body;
+        const response = await cloudant.postDocument({
+            db: 'reviews',
+            document: review
+        });
+        res.json(response.result);
+    } catch (err) {
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
+
 app.listen(port, () => {
   console.log(`Express app listening at http://localhost:${port}`);
 });
