@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
 import logging
-from .models import CarMake, CarModel, Dealer, DealerReview  # Import DealerReview model
-from django.http import HttpResponseNotAllowed
+from .models import CarMake, CarModel, Dealer, DealerReview
+from django.shortcuts import render, redirect
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -91,14 +91,6 @@ def get_dealerships(request):
     if request.method == "GET":
         return render(request, 'djangoapp/index.html', context)
 
-# Create a `get_dealer_details` view to render the reviews of a dealer
-# def get_dealer_details(request, dealer_id):
-# ...
-
-# Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
-
 # Create a `car_models` view to get a list of all car models
 def car_models(request):
     models = CarModel.objects.all()
@@ -115,6 +107,10 @@ def dealer_reviews(request, dealer_id):
 # Create an `update_dealer` view to update dealer details
 def update_dealer(request, dealer_id):
     if request.method == "POST":
+        # TODO: Add authentication check to ensure only authorized users can update
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return JsonResponse({"error": "Unauthorized"}, status=403)
+
         data = request.POST
         # TODO: Validate the data
 
@@ -135,6 +131,10 @@ def update_dealer(request, dealer_id):
 # Create a `post_review` view to post a dealer review
 def post_review(request, dealer_id):
     if request.method == "POST":
+        # TODO: Add authentication check to ensure only authorized users can post reviews
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Unauthorized"}, status=403)
+
         data = request.POST
         # TODO: Validate the data
 
