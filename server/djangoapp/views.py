@@ -1,5 +1,3 @@
-Certainly! Here's the full code with the appropriate changes:
-
 ```python
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseRedirect, HttpResponse
@@ -145,22 +143,26 @@ def update_dealer(request, dealer_id):
 # Create a `post_review` view to post a dealer review
 def post_review(request, dealer_id):
     if request.method == "POST":
-        # TODO: Add authentication check to ensure only authorized users can post reviews
         if not request.user.is_authenticated:
             return JsonResponse({"error": "Unauthorized"}, status=403)
 
         data = request.POST
-        # TODO: Validate the data as needed
+
+        # Validate the data
+        required_fields = ['content', 'rating']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'Missing required field: {field}'}, status=400)
 
         dealer = get_object_or_404(Dealer, id=dealer_id)
 
-        # Create a new DealerReview object with the validated data
+        # Create a new review
         review = DealerReview.objects.create(
             dealer=dealer,
-            title=data.get("title"),
+            user=request.user,
             content=data.get("content"),
             rating=data.get("rating"),
-            # TODO: Add other fields as needed
+            # Add other fields as needed
         )
 
         # Save the new review to the database
