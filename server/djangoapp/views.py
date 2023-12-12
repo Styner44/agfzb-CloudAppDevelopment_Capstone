@@ -12,7 +12,7 @@ from ibm_watson import FunctionsV1
 logger = logging.getLogger(__name__)
 
 # Set up IBM Cloud Functions client
-authenticator = IAMAuthenticator('your-ibm-cloud-api-key')
+authenticator = IAMAuthenticator('AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8')
 functions = FunctionsV1(authenticator=authenticator)
 
 # Views for static pages
@@ -101,7 +101,7 @@ def get_dealerships(request):
     if request.method == "GET":
         try:
             # Call the 'dealer-get' service
-            response = functions.invoke_action('your-namespace', 'dealer-get').get_result()
+            response = functions.invoke_action('Namespace-s3Y', 'dealer-get').get_result()
 
             # Extract the dealerships from the response
             dealerships = response['dealerships']
