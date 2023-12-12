@@ -1,4 +1,4 @@
-from django.db import models
+# Other model classes...from django.db import models
 from django.utils.timezone import now
 
 # Car Make model with fields: Name, Description, Country, Founded Date, etc.
@@ -25,13 +25,13 @@ class CarModel(models.Model):
 
     make = models.ForeignKey(CarMake, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    dealer_id = models.IntegerField()
+    dealer = models.ForeignKey('CarDealer', on_delete=models.CASCADE)  # Corrected this line
     car_type = models.CharField(
         max_length=2,
         choices=CAR_TYPES,
         default=SEDAN,
     )
-    year = models.IntegerField()  # Change this line
+    year = models.IntegerField()
     engine = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     mpg = models.DecimalField(max_digits=5, decimal_places=2)
