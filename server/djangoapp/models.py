@@ -31,7 +31,7 @@ class CarModel(models.Model):
         choices=CAR_TYPES,
         default=SEDAN,
     )
-    year = models.DateField()
+    year = models.IntegerField()  # Change this line
     engine = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     mpg = models.DecimalField(max_digits=5, decimal_places=2)
