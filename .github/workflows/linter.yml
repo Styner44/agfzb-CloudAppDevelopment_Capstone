@@ -1,33 +1,37 @@
-name: 'Lint Code'
-on:
+name: Lint Code
+'on':
   workflow_dispatch:
     inputs:
       logLevel:
-        description: 'Log level'
+        description: Log level
         required: true
-        default: 'warning'
+        default: warning
         type: choice
         options:
-        - info
-        - warning
-        - debug
+          - info
+          - warning
+          - debug
       tags:
-        description: 'Test scenario tags'
+        description: Test scenario tags
         required: false
         type: boolean
       environment:
-        description: 'Environment to run tests against'
+        description: Environment to run tests against
         type: environment
         required: false
   push:
-    branches: [master, main]
+    branches:
+      - master
+      - main
   pull_request:
-    branches: [master, main]
-jobs: # list of things to do
+    branches:
+      - master
+      - main
+jobs:
   lint_function_js:
-    name: Linting JavaScript Function 
-    runs-on: ubuntu-latest 
-    steps: # list of steps
+    name: Linting JavaScript Function
+    runs-on: ubuntu-latest
+    steps:
       - name: Install NodeJS
         uses: actions/setup-node@v3
         with:
@@ -40,10 +44,9 @@ jobs: # list of things to do
       - name: Code Linting
         run: npm run lint
         working-directory: functions/sample/nodejs
-    
   lint_function_python:
-    name: Linting Python Function 
-    runs-on: ubuntu-latest 
+    name: Linting Python Function
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.7
@@ -59,7 +62,7 @@ jobs: # list of things to do
         run: pylint *.py
         working-directory: functions/sample/python
   lint_django_server:
-    name: Linting Django Server 
+    name: Linting Django Server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -75,3 +78,4 @@ jobs: # list of things to do
       - name: Lint with Pylint
         run: pylint *.py
         working-directory: server
+
