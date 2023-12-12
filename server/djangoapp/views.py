@@ -104,7 +104,7 @@ def get_dealerships(request):
             response = functions.invoke_action('Namespace-s3Y', 'dealer-get').get_result()
 
             # Extract the dealerships from the response
-            dealerships = response['dealerships']
+            dealerships = response.get('dealerships', [])
 
             # Add the dealerships to the context
             context['dealerships'] = dealerships
