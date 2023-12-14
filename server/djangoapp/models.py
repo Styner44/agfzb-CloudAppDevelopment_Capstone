@@ -1,5 +1,6 @@
 # Other model classes...from django.db import models
 from django.utils.timezone import now
+from django.db import models
 
 # Car Make model with fields: Name, Description, Country, Founded Date, etc.
 class CarMake(models.Model):
