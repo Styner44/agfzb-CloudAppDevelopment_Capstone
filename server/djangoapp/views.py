@@ -1,10 +1,6 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseNotAllowed
-from django.contrib.auth.models import User
-from django.contrib.auth import login, logout, authenticate
-from django.contrib import messages
 import logging
-import requests
 from .models import CarModel, Dealer, DealerReview
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
@@ -42,81 +38,6 @@ def about(request):
     context = {"title": "about us"}
     return render(request, "djangoapp/about.html", context)
 
-def contact(request):
-    # Render the contact page
-    context = {"title": "contact us"}
-    return render(request, "djangoapp/contact.html", context)
-
-# View for handling user login
-def login_request(request):
-    context = {}
-    if request.method == "GET":
-        return render(request, "djangoapp/login.html")
-
-    if request.method == "POST":
-        # Attempt to authenticate the user
-        username = request.POST.get("username")
-        password = request.POST.get("pwd")
-
-        user = authenticate(username=username, password=password)
-        if user:
-            # Log in the user if authentication is successful
-            login(request, user)
-            context["message"] = "ok"
-        else:
-            context["message"] = "Invalid details"
-
-        return render(request, "djangoapp/login.html", context)
-
-# View for handling user logout
-def logout_request(request):
-    # Log out the user and redirect to the login page
-    logout(request)
-    return redirect("djangoapp:login")
-
-# View for handling user registration
-def registration_request(request):
-    context = {}
-    if request.method == "GET":
-        return render(request, "djangoapp/registration.html")
-
-    if request.method == "POST":
-        context["message"] = ""
-
-        email = request.POST.get('email')
-        username = request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        pwd = request.POST.get('pwd')
-        c_pwd = request.POST.get('c-pwd')
-
-        if pwd != c_pwd:
-            # Passwords do not match
-            message = "Passwords do not match"
-        elif User.objects.filter(email=email).exists():
-            # Email is already in use
-            message = "Email already in use"
-        else:
-            try:
-                # Check if the username already exists
-                User.objects.get(username=username)
-                message = "User already exists. Check email and/or username"
-            except User.DoesNotExist:
-                # Create a new user
-                user = User.objects.create(
-                    email=email,
-                    username=username,
-                    first_name=first_name,
-                    last_name=last_name,
-                )
-                user.set_password(pwd)
-                user.save()
-                message = "ok"
-
-        context["message"] = message
-        return render(request, "djangoapp/registration.html", context)
-
-# View for rendering the index page with a list of dealerships
 def get_dealerships(request):
     context = {"title": "Dealership Review"}
     if request.method == "GET":
@@ -136,6 +57,8 @@ def get_dealerships(request):
 
         # Render the 'index.html' template with the updated context
         return render(request, 'djangoapp/index.html', context)
+
+    return HttpResponseNotAllowed(["GET"])
 
 # View for getting a list of all car models
 def car_models(request):
@@ -164,13 +87,6 @@ def update_dealer(request, dealer_id):
 
         try:
             # Update dealer details
-            dealer = Dealer.objects.get(pk=dealer_id)
-            dealer.name = request.POST['name']
-            dealer.city = request.POST['city']
-            dealer.state = request.POST['state']
-            dealer.st = request.POST['st']
-            dealer.save()
-
             # TODO: Continue updating other dealer fields as needed
 
             return JsonResponse({'success': 'Dealer updated successfully'})
@@ -180,8 +96,8 @@ def update_dealer(request, dealer_id):
             # An unexpected error occurred
             logger.error(f"Error updating dealer: {str(e)}")
             return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
-    else:
-        return HttpResponseNotAllowed(["POST"])
+
+    return HttpResponseNotAllowed(["POST"])
 
 # View for posting a dealer review
 def post_review(request, dealer_id):
