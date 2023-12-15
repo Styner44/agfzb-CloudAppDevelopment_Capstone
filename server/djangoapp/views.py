@@ -4,9 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 import logging
+import requests
 from .models import CarModel, Dealer, DealerReview
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -14,6 +16,25 @@ logger = logging.getLogger(__name__)
 # Set up IBM Cloud Functions client
 authenticator = IAMAuthenticator('AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8')
 functions = FunctionsV1(authenticator=authenticator)
+
+
+def get_request(url, **kwargs):
+    """
+    This function makes a GET request to the specified URL with optional parameters.
+    """
+    response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
+    return response.json()
+
+def get_dealers_from_cf(url, **kwargs):
+    """
+    This function calls get_request and parses the returned JSON.
+    """
+    data = get_request(url, **kwargs)
+    dealers = []
+    if 'docs' in data:
+        for doc in data['docs']:
+            dealers.append(doc)
+    return dealers
 
 # Views for static pages
 def about(request):
