@@ -45,7 +45,14 @@ def get_dealerships(request):
     if request.method == "GET":
         try:
             # Step 2: Get the list of dealerships
-            dealerships = get_dealers_from_cf()
+            dealership_data = get_dealers_from_cf()
+
+            # Create Dealer objects from the dealership data
+            dealerships = []
+            for dealer in dealership_data:
+                new_dealer = Dealer(name=dealer['name'], city=dealer['city'], state=dealer['state'], st=dealer['st'], address=dealer['address'], full_name=dealer['full_name'], lat=dealer['lat'], long=dealer['long'], short_name=dealer['short_name'], zip=dealer['zip'])
+                new_dealer.save()
+                dealerships.append(new_dealer)
 
             # Step 3: Add the dealerships to the context
             context['dealerships'] = dealerships

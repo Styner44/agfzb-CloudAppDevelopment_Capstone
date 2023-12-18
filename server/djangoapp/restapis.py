@@ -1,5 +1,5 @@
 import requests
-import json
+import requests
 from requests.auth import HTTPBasicAuth
 from djangoapp.models import CarDealer, DealerReview
 
@@ -23,12 +23,26 @@ def get_request(url, params=None, headers=None, auth=None):
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
 def get_dealers_from_cf(url, **kwargs):
-    # Call get_request() with specified arguments
+    results = []
+    # Call get_request with a URL parameter
     response = get_request(url, params=kwargs, headers={'Content-Type': 'application/json'},
                           auth=HTTPBasicAuth('apikey', api_key))
-    # Parse JSON results into a CarDealer object list
-    car_dealers = [CarDealer(dealer['id'], dealer['name']) for dealer in response.json()]
-    return car_dealers
+    json_result = response.json()
+    if json_result:
+        # Get the row list in JSON as dealers
+        dealers = json_result["rows"]
+        # For each dealer object
+        for dealer in dealers:
+            # Get its content in `doc` object
+            dealer_doc = dealer["doc"]
+            # Create a CarDealer object with values in `doc` object
+            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+                                   id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
+                                   short_name=dealer_doc["short_name"],
+                                   st=dealer_doc["st"], zip=dealer_doc["zip"])
+            results.append(dealer_obj)
+
+    return results
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
 def get_dealer_reviews_from_cf(url, dealerId):

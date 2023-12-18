@@ -1,7 +1,7 @@
 # Other model classes...from django.db import models
 from django.utils.timezone import now
 from django.db import models
-from .car_dealer import CarDealer
+from djangoapp.models import CarDealer
 from django.utils.timezone import now
 from django.db import models
 
