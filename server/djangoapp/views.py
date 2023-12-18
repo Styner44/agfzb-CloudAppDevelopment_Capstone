@@ -8,7 +8,7 @@ import logging
 import requests
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
-# Remove the unused import statement
+# Remove the unresolved import statement
 # from .utils import get_dealer_reviews_from_cf
 
 # Get an instance of a logger
@@ -46,7 +46,7 @@ def get_dealer_details(request, dealer_id):
     context = {}
     if request.method == "GET":
         # Placeholder usage of the "dealer_id" parameter
-        dealer_id = dealer_id
+        # dealer_id = dealer_id
         reviews = get_dealer_reviews_from_cf('your-cloud-function-domain/reviews/review-get', dealer_id)
         context['reviews'] = reviews
         return render(request, 'djangoapp/dealer_details.html', context)
