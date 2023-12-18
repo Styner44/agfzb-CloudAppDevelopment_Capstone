@@ -7,6 +7,8 @@ from ibm_watson import FunctionsV1
 
 
 # Get an instance of a logger
+import requests  # Import the requests module
+
 logger = logging.getLogger(__name__)
 
 # Set up IBM Cloud Functions client
@@ -42,15 +44,14 @@ def get_dealerships(request):
     context = {"title": "Dealership Review"}
     if request.method == "GET":
         try:
-            # Call the 'dealer-get' service
-            response = functions.invoke_action('Namespace-s3Y', 'dealer-get').get_result()
+            # Step 2: Get the list of dealerships
+            dealerships = get_dealers_from_cf()
 
-            # Extract the dealerships from the response
-            dealerships = response.get('dealerships', [])
-
-            # Add the dealerships to the context
+            # Step 3: Add the dealerships to the context
             context['dealerships'] = dealerships
 
+            # Step 4: Render the template with the context
+            return render(request, 'djangoapp/index.html', context)
         except Exception as e:
             # Handle any errors that might occur during the API call
             context['error'] = f"Error retrieving dealerships: {str(e)}"
