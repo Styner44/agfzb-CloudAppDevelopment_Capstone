@@ -4,17 +4,19 @@ import logging
 from .models import CarModel, Dealer, DealerReview
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
-
+import logging
+import requests
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_watson import FunctionsV1
+# Remove the unused import statement
+# from .utils import get_dealer_reviews_from_cf
 
 # Get an instance of a logger
-import requests  # Import the requests module
-
 logger = logging.getLogger(__name__)
 
 # Set up IBM Cloud Functions client
 authenticator = IAMAuthenticator('AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8')
 functions = FunctionsV1(authenticator=authenticator)
-
 
 def get_request(url, **kwargs):
     """
@@ -40,6 +42,16 @@ def about(request):
     context = {"title": "about us"}
     return render(request, "djangoapp/about.html", context)
 
+def get_dealer_details(request, dealer_id):
+    context = {}
+    if request.method == "GET":
+        # Placeholder usage of the "dealer_id" parameter
+        dealer_id = dealer_id
+        reviews = get_dealer_reviews_from_cf('your-cloud-function-domain/reviews/review-get', dealer_id)
+        context['reviews'] = reviews
+        return render(request, 'djangoapp/dealer_details.html', context)
+    return HttpResponseNotAllowed(["GET"])
+
 def get_dealerships(request):
     context = {"title": "Dealership Review"}
     if request.method == "GET":
@@ -63,19 +75,17 @@ def get_dealerships(request):
             # Handle any errors that might occur during the API call
             context['error'] = f"Error retrieving dealerships: {str(e)}"
 
-        # Render the 'index.html' template with the updated context
-        return render(request, 'djangoapp/index.html', context)
-
-    return HttpResponseNotAllowed(["GET"])
+    # Render the 'index.html' template with the updated context
+    return render(request, 'djangoapp/index.html', context)
 
 # View for getting a list of all car models
-def car_models(request):
+def car_models():
     models = CarModel.objects.all()
     data = {"car_models": list(models.values("name", "description"))}
     return JsonResponse(data)
 
 # View for getting reviews of a dealer
-def dealer_reviews(request, dealer_id):
+def dealer_reviews(dealer_id):
     reviews = DealerReview.objects.filter(dealer_id=dealer_id)
     data = {"dealer_reviews": list(reviews.values("name", "review", "purchase_date", "purchase", "car_make", "car_model", "car_year", "sentiment"))}
     return JsonResponse(data)
