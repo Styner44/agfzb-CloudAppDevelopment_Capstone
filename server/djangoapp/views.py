@@ -4,38 +4,11 @@ import logging
 from .models import CarModel, Dealer, DealerReview
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
-import logging
 import requests
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-from ibm_watson import FunctionsV1
-# Remove the unresolved import statement
+# Remove unused import
 # from .utils import get_dealer_reviews_from_cf
 
-# Get an instance of a logger
-logger = logging.getLogger(__name__)
-
-# Set up IBM Cloud Functions client
-authenticator = IAMAuthenticator('AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8')
-functions = FunctionsV1(authenticator=authenticator)
-
-def get_request(url, **kwargs):
-    """
-    This function makes a GET request to the specified URL with optional parameters.
-    """
-    response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
-    return response.json()
-
-def get_dealers_from_cf(url, **kwargs):
-    """
-    This function calls get_request and parses the returned JSON.
-    """
-    data = get_request(url, **kwargs)
-    dealers = []
-    if 'docs' in data:
-        for doc in data['docs']:
-            dealers.append(doc)
-    return dealers
-
+# Remove unused function parameters
 # Views for static pages
 def about(request):
     # Render the about page
@@ -45,9 +18,7 @@ def about(request):
 def get_dealer_details(request, dealer_id):
     context = {}
     if request.method == "GET":
-        # Placeholder usage of the "dealer_id" parameter
-        # dealer_id = dealer_id
-        reviews = get_dealer_reviews_from_cf('your-cloud-function-domain/reviews/review-get', dealer_id)
+        reviews = get_dealer_reviews_from_cf(dealer_id)
         context['reviews'] = reviews
         return render(request, 'djangoapp/dealer_details.html', context)
     return HttpResponseNotAllowed(["GET"])
@@ -71,9 +42,12 @@ def get_dealerships(request):
 
             # Step 4: Render the template with the context
             return render(request, 'djangoapp/index.html', context)
-        except Exception as e:
-            # Handle any errors that might occur during the API call
-            context['error'] = f"Error retrieving dealerships: {str(e)}"
+        except requests.RequestException as e:
+            logger.error(f"Error retrieving dealerships: {str(e)}")
+            context['error'] = "Error retrieving dealerships. Please try again later."
+        except ValueError as e:
+            logger.error(f"Error parsing response: {str(e)}")
+            context['error'] = "Error parsing response. Please try again later."
 
     # Render the 'index.html' template with the updated context
     return render(request, 'djangoapp/index.html', context)
@@ -105,11 +79,18 @@ def update_dealer(request, dealer_id):
 
         try:
             # Update dealer details
-            # TODO: Continue updating other dealer fields as needed
+            dealer = Dealer.objects.get(id=dealer_id)
+            dealer.name = request.POST['name']
+            dealer.city = request.POST['city']
+            dealer.state = request.POST['state']
+            dealer.st = request.POST['st']
+            dealer.save()
 
             return JsonResponse({'success': 'Dealer updated successfully'})
         except Dealer.DoesNotExist:
             return JsonResponse({'error': 'Dealer does not exist'}, status=404)
+        except (KeyError, TypeError) as e:
+            return JsonResponse({'error': f'Invalid data format: {str(e)}'}, status=400)
         except Exception as e:
             # An unexpected error occurred
             logger.error(f"Error updating dealer: {str(e)}")
@@ -148,3 +129,4 @@ def post_review(request, dealer_id):
         return JsonResponse({"message": "Review posted successfully"})
     else:
         return HttpResponseNotAllowed(["POST"])
+
