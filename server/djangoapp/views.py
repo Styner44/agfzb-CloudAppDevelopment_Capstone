@@ -5,6 +5,7 @@ import logging
 from .models import CarModel, Dealer, DealerReview, Car
 import requests
 from datetime import datetime
+from django.http import HttpResponseBadRequest
 
 def add_review(request, dealer_id):
     if request.method == 'GET':
@@ -16,14 +17,17 @@ def add_review(request, dealer_id):
             # Validate the presence of required fields in the POST data
             purchase_check = request.POST.get('purchasecheck')
             content = request.POST.get('content')
-            purchase_date = datetime.strptime(request.POST.get('purchasedate'), '%m/%d/%Y').isoformat()
+            purchasedate = request.POST.get('purchasedate')
             car_id = request.POST.get('car')
 
-            if not (purchase_check and content and purchase_date and car_id):
-                return HttpResponse('Invalid POST data', status=400)
+            if not (purchase_check and content and purchasedate and car_id):
+                return HttpResponseBadRequest('Invalid or missing POST data')
+
+            # Convert purchasedate to ISO format
+            purchase_date = datetime.strptime(purchasedate, '%m/%d/%Y').isoformat()
 
             car = Car.objects.get(id=car_id)
-            
+
             review = {
                 'dealership': dealer_id,
                 'name': request.user.username,
@@ -46,16 +50,15 @@ def add_review(request, dealer_id):
             if response.status_code == 200:
                 return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
             else:
-                return HttpResponse('Failed to post review', status=response.status_code)
+                return HttpResponse(f'Failed to post review. Status code: {response.status_code}', status=response.status_code)
 
         except Car.DoesNotExist:
-            return HttpResponse('Invalid car ID', status=400)
+            return HttpResponseBadRequest('Invalid car ID')
         except ValueError:
-            return HttpResponse('Invalid date format', status=400)
+            return HttpResponseBadRequest('Invalid date format')
         except requests.RequestException as e:
             logger.error(f"Error posting review to Cloudant: {str(e)}")
             return HttpResponse('Failed to post review to Cloudant', status=500)
-
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
