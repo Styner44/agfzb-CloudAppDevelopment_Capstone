@@ -7,13 +7,43 @@ import requests
 import logging
 from django.shortcuts import render
 from .utils import get_dealer_reviews_from_cf, get_dealers_from_cf
+from datetime import datetime
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
+from .utils import post_request
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 # Views for static pages
+def add_review(request, dealer_id, review_message="This is a great car dealer"):
+    # Check if the user is authenticated
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    # Create a dictionary object called review
+    review = {
+        "time": datetime.utcnow().isoformat(),
+        "name": request.user.username,
+        "dealership": dealer_id,
+        "review": "This is a great car dealer",  # You may customize this based on your requirements
+        # Add any other attributes as needed
+    }
+
+    # Create another dictionary object called json_payload
+    json_payload = {"review": review}
+
+    # Define the URL for the review-post cloud function
+    review_post_url = "https://your-review-post-cloud-function-url"
+
+    # Call the post_request method with the payload
+    result = post_request(review_post_url, json_payload)
+
+    # You may print the post response in the console or append it to HttpResponse and render it on the browser
+    print(result)
+
+    return JsonResponse(result)
+
 def about(request):
     # Render the about page
     context = {"title": "about us"}
@@ -27,8 +57,10 @@ def get_dealer_details(request, dealer_id):
         return render(request, 'djangoapp/dealer_details.html', context)
     return HttpResponseNotAllowed(["GET"])
 
+# View for getting a list of all dealerships
 def get_dealerships(request):
     context = {"title": "Dealership Review"}
+    
     if request.method == "GET":
         try:
             # Step 2: Get the list of dealerships
@@ -36,33 +68,18 @@ def get_dealerships(request):
 
             # Create Dealer objects from the dealership data
             dealerships = []
-            for dealer in dealership_data:
+            for dealer_info in dealership_data:
                 new_dealer = Dealer(
-                    name=dealer['name'],
-                    city=dealer['city'],
-                    state=dealer['state'],
-                    st=dealer['st'],
-                    address=dealer['address'],
-                    full_name=dealer['full_name'],
-                    lat=dealer['lat'],
-                    long=dealer['long'],
-                    short_name=dealer['short_name'],
-                    zip=dealer['zip']
-                )
-                new_dealer.save()
-                dealerships.append(new_dealer)
-            for dealer in dealership_data:
-                new_dealer = Dealer(
-                    name=dealer['name'],
-                    city=dealer['city'],
-                    state=dealer['state'],
-                    st=dealer['st'],
-                    address=dealer['address'],
-                    full_name=dealer['full_name'],
-                    lat=dealer['lat'],
-                    long=dealer['long'],
-                    short_name=dealer['short_name'],
-                    zip=dealer['zip']
+                    name=dealer_info['name'],
+                    city=dealer_info['city'],
+                    state=dealer_info['state'],
+                    st=dealer_info['st'],
+                    address=dealer_info['address'],
+                    full_name=dealer_info['full_name'],
+                    lat=dealer_info['lat'],
+                    long=dealer_info['long'],
+                    short_name=dealer_info['short_name'],
+                    zip=dealer_info['zip']
                 )
                 new_dealer.save()
                 dealerships.append(new_dealer)
@@ -81,6 +98,7 @@ def get_dealerships(request):
 
     # Render the 'index.html' template with the updated context
     return render(request, 'djangoapp/index.html', context)
+
 
 # View for getting a list of all car models
 def car_models():
