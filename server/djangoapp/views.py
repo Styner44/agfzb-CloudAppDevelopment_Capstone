@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from .restapis import get_dealer_reviews_from_cf
 from django.http import JsonResponse, HttpResponseNotAllowed
 import logging
 from .models import CarModel, Dealer, DealerReview
@@ -51,6 +52,8 @@ def about(request):
 
 def get_dealer_details(request, dealer_id):
     context = {}
+    context['reviews'] = get_dealer_reviews_from_cf(dealer_id)
+    return render(request, 'djangoapp/dealer_details.html', context)
     if request.method == "GET":
         reviews = get_dealer_reviews_from_cf(dealer_id)
         context['reviews'] = reviews

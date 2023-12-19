@@ -1,7 +1,7 @@
 {% extends "djangoapp/layout.html" %}
 
 {% block content %}
-    <table class="table" id="table">
+    <table class="table" id="table" data-filter-control="true">
         <thead>
             <tr>
                 <th>ID</th>
@@ -9,7 +9,7 @@
                 <th>City</th>
                 <th>Address</th>
                 <th>Zip</th>
-                <th>State</th>
+                <th data-field="state" data-filter-control="select">State</th>
             </tr>
         </thead>
         <tbody>
@@ -25,4 +25,12 @@
             {% endfor %}
         </tbody>
     </table>
+{% endblock %}
+
+{% block javascript %}
+<script>
+  $(function() {
+    $('#table').bootstrapTable()
+  })
+</script>
 {% endblock %}
