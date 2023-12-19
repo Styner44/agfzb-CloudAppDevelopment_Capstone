@@ -7,8 +7,21 @@ api_key = "your_api_key"
 
 # Define the get_request function
 def get_request(url, params=None, headers=None, auth=None):
-    response = requests.get(url, params=params, headers=headers, auth=auth)
+    if auth:
+        response = requests.get(url, params=params, headers=headers, auth=auth)
+    else:
+        response = requests.get(url, params=params, headers=headers)
     return response.json()
+
+def analyze_review_sentiments(url, **kwargs):
+    params = dict()
+    params["text"] = kwargs["text"]
+    params["version"] = kwargs["version"]
+    params["features"] = kwargs["features"]
+    params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+    response = get_request(url, params=params, headers={'Content-Type': 'application/json'},
+                           auth=HTTPBasicAuth('apikey', api_key) if api_key else None)
+    return response
 
 # Define the post_request function
 def post_request(url, payload=None, headers=None):
@@ -19,7 +32,7 @@ def post_request(url, payload=None, headers=None):
 def get_dealer_reviews_from_cf(url, dealerId):
     try:
         data = get_request(url, params={'dealerId': dealerId}, headers={'Content-Type': 'application/json'},
-                          auth=HTTPBasicAuth('apikey', api_key))
+                          auth=HTTPBasicAuth('username', 'password'))  # Replace 'username' and 'password' with your actual username and password
         reviews = []
         if 'docs' in data:
             for doc in data['docs']:
@@ -39,7 +52,7 @@ def get_dealer_reviews_from_cf(url, dealerId):
 def get_data_from_url(url, api_key):
     params = {}  # Add any parameters you need for the request here
     response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-                            auth=HTTPBasicAuth('apikey', api_key))
+                            auth=HTTPBasicAuth('username', 'password'))  # Replace 'username' and 'password' with your actual username and password
     return response.json()  # Returns the response as a JSON object
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
