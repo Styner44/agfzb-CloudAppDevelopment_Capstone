@@ -5,10 +5,18 @@ from .models import CarModel, Dealer, DealerReview
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
 import requests
-# Remove unused import
-# from .utils import get_dealer_reviews_from_cf
 
-# Remove unused function parameters
+# Assuming the following import for get_dealer_reviews_from_cf
+from .utils import get_dealer_reviews_from_cf
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
+# Define get_dealers_from_cf function (missing in your code)
+def get_dealers_from_cf():
+    # Implement the function logic here
+    pass
+
 # Views for static pages
 def about(request):
     # Render the about page
@@ -33,7 +41,18 @@ def get_dealerships(request):
             # Create Dealer objects from the dealership data
             dealerships = []
             for dealer in dealership_data:
-                new_dealer = Dealer(name=dealer['name'], city=dealer['city'], state=dealer['state'], st=dealer['st'], address=dealer['address'], full_name=dealer['full_name'], lat=dealer['lat'], long=dealer['long'], short_name=dealer['short_name'], zip=dealer['zip'])
+                new_dealer = Dealer(
+                    name=dealer['name'],
+                    city=dealer['city'],
+                    state=dealer['state'],
+                    st=dealer['st'],
+                    address=dealer['address'],
+                    full_name=dealer['full_name'],
+                    lat=dealer['lat'],
+                    long=dealer['long'],
+                    short_name=dealer['short_name'],
+                    zip=dealer['zip']
+                )
                 new_dealer.save()
                 dealerships.append(new_dealer)
 
@@ -53,13 +72,13 @@ def get_dealerships(request):
     return render(request, 'djangoapp/index.html', context)
 
 # View for getting a list of all car models
-def car_models():
+def car_models(request):
     models = CarModel.objects.all()
     data = {"car_models": list(models.values("name", "description"))}
     return JsonResponse(data)
 
 # View for getting reviews of a dealer
-def dealer_reviews(dealer_id):
+def dealer_reviews(request, dealer_id):
     reviews = DealerReview.objects.filter(dealer_id=dealer_id)
     data = {"dealer_reviews": list(reviews.values("name", "review", "purchase_date", "purchase", "car_make", "car_model", "car_year", "sentiment"))}
     return JsonResponse(data)
@@ -129,4 +148,3 @@ def post_review(request, dealer_id):
         return JsonResponse({"message": "Review posted successfully"})
     else:
         return HttpResponseNotAllowed(["POST"])
-
