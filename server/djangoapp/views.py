@@ -12,12 +12,47 @@ from datetime import datetime
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
 from .utils import post_request
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from .models import Car
+from datetime import datetime
+import requests
+
+def add_review(request, dealer_id):
+    if request.method == 'GET':
+        cars = Car.objects.filter(dealer_id=dealer_id)
+        return render(request, 'djangoapp/add_review.html', {'cars': cars, 'dealer_id': dealer_id})
+
+    elif request.method == 'POST':
+        review = {
+            'dealership': dealer_id,
+            'name': request.user.username,
+            'purchase': request.POST['purchasecheck'],
+            'review': request.POST['content'],
+            'purchase_date': datetime.strptime(request.POST['purchasedate'], '%m/%d/%Y').isoformat(),
+            'car_make': Car.objects.get(id=request.POST['car']).make.name,
+            'car_model': Car.objects.get(id=request.POST['car']).name,
+            'car_year': Car.objects.get(id=request.POST['car']).year.year,
+        }
+
+        json_payload = {
+            "review": review
+        }
+
+        # Make a POST request to the Cloudant server with json_payload
+        # You need to replace 'cloudant_server' with your actual Cloudant server
+        response = requests.post('cloudant_server', json=json_payload)
+
+        if response.status_code == 200:
+            return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
+        else:
+            return HttpResponse('Failed to post review')
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 # Views for static pages
-def add_review(request, dealer_id, review_message="This is a great car dealer"):
+def add_review(request, dealer_id):
     # Check if the user is authenticated
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Unauthorized"}, status=403)
