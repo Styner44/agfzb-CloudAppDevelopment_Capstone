@@ -35,6 +35,12 @@ def get_dealer_reviews_from_cf(url, dealerId):
     except requests.exceptions.RequestException as err:
         print("Error:", err)
 
+    def get_data_from_url(url, api_key):
+        params = {}  # Add any parameters you need for the request here
+        response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
+                            auth=HTTPBasicAuth('apikey', api_key))
+        return response.json()  # Returns the response as a JSON object
+
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 def analyze_review_sentiments(text):
     # Call post_request() to analyze text
