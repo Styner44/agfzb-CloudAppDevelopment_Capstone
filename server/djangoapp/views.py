@@ -4,6 +4,8 @@ import logging
 from .models import CarModel, Dealer, DealerReview
 import logging
 import requests
+import logging
+from django.shortcuts import render
 from .utils import get_dealer_reviews_from_cf, get_dealers_from_cf
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import FunctionsV1
