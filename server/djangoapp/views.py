@@ -72,13 +72,13 @@ def get_dealerships(request):
     return render(request, 'djangoapp/index.html', context)
 
 # View for getting a list of all car models
-def car_models(request):
+def car_models():
     models = CarModel.objects.all()
     data = {"car_models": list(models.values("name", "description"))}
     return JsonResponse(data)
 
 # View for getting reviews of a dealer
-def dealer_reviews(request, dealer_id):
+def dealer_reviews(dealer_id):
     reviews = DealerReview.objects.filter(dealer_id=dealer_id)
     data = {"dealer_reviews": list(reviews.values("name", "review", "purchase_date", "purchase", "car_make", "car_model", "car_year", "sentiment"))}
     return JsonResponse(data)
