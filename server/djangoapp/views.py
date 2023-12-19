@@ -1,19 +1,10 @@
-from django.shortcuts import render, get_object_or_404
-from .restapis import get_dealer_reviews_from_cf
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.shortcuts import render, get_object_or_404, redirect
+from .restapis import get_dealer_reviews_from_cf, get_dealers_from_cf
+from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
 import logging
-from .models import CarModel, Dealer, DealerReview
-import logging
+from .models import CarModel, Dealer, DealerReview, Car
 import requests
-import logging
-from django.shortcuts import render
-from .utils import get_dealer_reviews_from_cf, get_dealers_from_cf
 from datetime import datetime
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from .models import Car
-from datetime import datetime
-import requests
 
 def add_review(request, dealer_id):
     if request.method == 'GET':
@@ -21,29 +12,50 @@ def add_review(request, dealer_id):
         return render(request, 'djangoapp/add_review.html', {'cars': cars, 'dealer_id': dealer_id})
 
     elif request.method == 'POST':
-        review = {
-            'dealership': dealer_id,
-            'name': request.user.username,
-            'purchase': request.POST['purchasecheck'],
-            'review': request.POST['content'],
-            'purchase_date': datetime.strptime(request.POST['purchasedate'], '%m/%d/%Y').isoformat(),
-            'car_make': Car.objects.get(id=request.POST['car']).make.name,
-            'car_model': Car.objects.get(id=request.POST['car']).name,
-            'car_year': Car.objects.get(id=request.POST['car']).year.year,
-        }
+        try:
+            # Validate the presence of required fields in the POST data
+            purchase_check = request.POST.get('purchasecheck')
+            content = request.POST.get('content')
+            purchase_date = datetime.strptime(request.POST.get('purchasedate'), '%m/%d/%Y').isoformat()
+            car_id = request.POST.get('car')
 
-        json_payload = {
-            "review": review
-        }
+            if not (purchase_check and content and purchase_date and car_id):
+                return HttpResponse('Invalid POST data', status=400)
 
-        # Make a POST request to the Cloudant server with json_payload
-        # You need to replace 'cloudant_server' with your actual Cloudant server
-        response = requests.post('cloudant_server', json=json_payload)
+            car = Car.objects.get(id=car_id)
+            
+            review = {
+                'dealership': dealer_id,
+                'name': request.user.username,
+                'purchase': purchase_check,
+                'review': content,
+                'purchase_date': purchase_date,
+                'car_make': car.make.name,
+                'car_model': car.name,
+                'car_year': car.year.year,
+            }
 
-        if response.status_code == 200:
-            return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
-        else:
-            return HttpResponse('Failed to post review')
+            json_payload = {
+                "review": review
+            }
+
+            # Make a POST request to the Cloudant server with json_payload
+            # Replace 'cloudant_server' with your actual Cloudant server URL
+            response = requests.post('cloudant_server', json=json_payload)
+
+            if response.status_code == 200:
+                return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
+            else:
+                return HttpResponse('Failed to post review', status=response.status_code)
+
+        except Car.DoesNotExist:
+            return HttpResponse('Invalid car ID', status=400)
+        except ValueError:
+            return HttpResponse('Invalid date format', status=400)
+        except requests.RequestException as e:
+            logger.error(f"Error posting review to Cloudant: {str(e)}")
+            return HttpResponse('Failed to post review to Cloudant', status=500)
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
