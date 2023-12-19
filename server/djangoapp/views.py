@@ -9,8 +9,6 @@ import logging
 from django.shortcuts import render
 from .utils import get_dealer_reviews_from_cf, get_dealers_from_cf
 from datetime import datetime
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-from ibm_watson import FunctionsV1
 from .utils import post_request
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -52,34 +50,6 @@ def add_review(request, dealer_id):
 logger = logging.getLogger(__name__)
 
 # Views for static pages
-def add_review(request, dealer_id):
-    # Check if the user is authenticated
-    if not request.user.is_authenticated:
-        return JsonResponse({"error": "Unauthorized"}, status=403)
-
-    # Create a dictionary object called review
-    review = {
-        "time": datetime.utcnow().isoformat(),
-        "name": request.user.username,
-        "dealership": dealer_id,
-        "review": "This is a great car dealer",  # You may customize this based on your requirements
-        # Add any other attributes as needed
-    }
-
-    # Create another dictionary object called json_payload
-    json_payload = {"review": review}
-
-    # Define the URL for the review-post cloud function
-    review_post_url = "https://your-review-post-cloud-function-url"
-
-    # Call the post_request method with the payload
-    result = post_request(review_post_url, json_payload)
-
-    # You may print the post response in the console or append it to HttpResponse and render it on the browser
-    print(result)
-
-    return JsonResponse(result)
-
 def about(request):
     # Render the about page
     context = {"title": "about us"}
