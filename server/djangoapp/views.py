@@ -48,6 +48,21 @@ def get_dealerships(request):
                 )
                 new_dealer.save()
                 dealerships.append(new_dealer)
+            for dealer in dealership_data:
+                new_dealer = Dealer(
+                    name=dealer['name'],
+                    city=dealer['city'],
+                    state=dealer['state'],
+                    st=dealer['st'],
+                    address=dealer['address'],
+                    full_name=dealer['full_name'],
+                    lat=dealer['lat'],
+                    long=dealer['long'],
+                    short_name=dealer['short_name'],
+                    zip=dealer['zip']
+                )
+                new_dealer.save()
+                dealerships.append(new_dealer)
 
             # Step 3: Add the dealerships to the context
             context['dealerships'] = dealerships
@@ -65,13 +80,13 @@ def get_dealerships(request):
     return render(request, 'djangoapp/index.html', context)
 
 # View for getting a list of all car models
-def car_models(request):
+def car_models():
     models = CarModel.objects.all()
     data = {"car_models": list(models.values("name", "description"))}
     return JsonResponse(data)
 
 # View for getting reviews of a dealer
-def dealer_reviews(request, dealer_id):
+def dealer_reviews(dealer_id):
     reviews = DealerReview.objects.filter(dealer_id=dealer_id)
     data = {"dealer_reviews": list(reviews.values("name", "review", "purchase_date", "purchase", "car_make", "car_model", "car_year", "sentiment"))}
     return JsonResponse(data)
