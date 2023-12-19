@@ -2,10 +2,11 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseNotAllowed
 import logging
 from .models import CarModel, Dealer, DealerReview
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-from ibm_watson import FunctionsV1
+import logging
 import requests
 from .utils import get_dealer_reviews_from_cf, get_dealers_from_cf
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_watson import FunctionsV1
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
