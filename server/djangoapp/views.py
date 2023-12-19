@@ -9,7 +9,6 @@ import logging
 from django.shortcuts import render
 from .utils import get_dealer_reviews_from_cf, get_dealers_from_cf
 from datetime import datetime
-from .utils import post_request
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Car
@@ -59,11 +58,6 @@ def get_dealer_details(request, dealer_id):
     context = {}
     context['reviews'] = get_dealer_reviews_from_cf(dealer_id)
     return render(request, 'djangoapp/dealer_details.html', context)
-    if request.method == "GET":
-        reviews = get_dealer_reviews_from_cf(dealer_id)
-        context['reviews'] = reviews
-        return render(request, 'djangoapp/dealer_details.html', context)
-    return HttpResponseNotAllowed(["GET"])
 
 # View for getting a list of all dealerships
 def get_dealerships(request):
