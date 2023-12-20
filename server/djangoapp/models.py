@@ -1,9 +1,6 @@
 # Other model classes...from django.db import models
-from django.utils.timezone import now
 from django.db import models
-from djangoapp.models import CarDealer
 from django.utils.timezone import now
-from django.db import models
 
 # Car Make model with fields: Name, Description, Country, Founded Date, etc.
 class CarMake(models.Model):
@@ -15,6 +12,22 @@ class CarMake(models.Model):
 
     def __str__(self):
         return self.name
+
+# Car Dealer model with fields: Name, City, State, ST
+class CarDealer(models.Model):
+    name = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    st = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, null=True, blank=True)
+    full_name = models.CharField(max_length=255, default='Dealer Name')
+    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    long = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    short_name = models.CharField(max_length=255, default='Short Name')
+    zip = models.CharField(max_length=10, null=True, blank=True)
+
+    def __str__(self):
+        return "Dealer name: " + self.full_name
 
 # Car Model model with fields: Make, Name, Dealer ID, Type, Year, Engine, Price, MPG, etc.
 class CarModel(models.Model):
@@ -42,24 +55,6 @@ class CarModel(models.Model):
 
     def __str__(self):
         return self.name
-class CarDealer(models.Model):
-    # Car Dealer model with fields: Name, City, State, STclass CarDealer(models.Model):
-    # Existing fields
-    name = models.CharField(max_length=255)
-    city = models.CharField(max_length=255)
-    state = models.CharField(max_length=255)
-    st = models.CharField(max_length=255)
-
-    # New fields
-    address = models.CharField(max_length=255, null=True, blank=True)
-    full_name = models.CharField(max_length=255, default='Dealer Name')
-    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    long = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    short_name = models.CharField(max_length=255, default='Short Name')
-    zip = models.CharField(max_length=10, null=True, blank=True)
-
-    def __str__(self):
-        return "Dealer name: " + self.full_name
 
 # Dealer Review model with fields: Dealership, Name, Purchase, Review, Purchase Date, Car Make, Car Model, Car Year, etc.
 class DealerReview(models.Model):
