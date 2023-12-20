@@ -20,6 +20,41 @@ def post_request(url, payload=None, headers=None):
     response.raise_for_status()  # Raise HTTPError for bad responses
     return response.json()
 
+# Define the get_dealers_from_cf function
+def get_dealers_from_cf(url):
+    try:
+        data = get_request(
+            url,
+            headers={'Content-Type': 'application/json'},
+            auth=HTTPBasicAuth('username', 'password'),  # Replace with actual username and password
+        )
+        dealers = []
+        if 'docs' in data:
+            for doc in data['docs']:
+                dealer = {
+                    'id': doc['id'],
+                    'name': doc['name'],
+                    'city': doc['city'],
+                    'state': doc['state'],
+                    'st': doc['st'],
+                    'address': doc['address'],
+                    'zip': doc['zip'],
+                    'lat': doc['lat'],
+                    'long': doc['long'],
+                    'short_name': doc['short_name'],
+                    'dealer_type': doc['dealer_type'],
+                }
+                dealers.append(dealer)
+        return dealers
+    except requests.exceptions.HTTPError as errh:
+        print("HTTP Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Error:", err)
+
 # Define the get_dealer_reviews_from_cf function
 def get_dealer_reviews_from_cf(url, dealerId):
     try:
@@ -83,3 +118,4 @@ if __name__ == "__main__":
     text = "This is a review text."
     sentiment_label = analyze_review_sentiments(text)
     print(sentiment_label)
+
