@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Review</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <form method="post" action="{% url 'djangoapp:add_review' dealer_id %}">
+        {% csrf_token %}
+        <textarea class="form-control" id="content" name="content" rows="2" required></textarea>
+        <input class="form-check-input" type="checkbox" name="purchasecheck" id="purchasecheck">
+        <select name="car" id="car" class="form-select" required>
+            {% for car in cars %}
+                <option selected value={{car.id}}>{{car.name}}-{{car.make.name}}-{{ car.year|date:"Y" }}</option>
+            {% endfor %}
+        </select>
+        <input class="date-own form-control" type="text" name="purchasedate" id="purchasedate">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript">
+        $('.date-own').datepicker({
+            format: 'mm/dd/yyyy'
+        });
+    </script>
+</body>
+</html>
