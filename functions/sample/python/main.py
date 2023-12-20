@@ -7,6 +7,7 @@ from cloudant import Cloudant
 from cloudant import CloudantException
 import requests
 
+
 def main(param_dict):
   """Main Function
 
