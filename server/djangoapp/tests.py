@@ -1,6 +1,18 @@
 from datetime import date
-from django.test import TestCase
-from djangoapp.models import CarMake, CarModel
+from django.test import TestCase, Client
+from django.urls import reverse
+from djangoapp.models import CarMake, CarModel, Dealership
+
+class DealershipViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse('index')  # replace 'get_dealerships' with 'index'
+        Dealership.objects.create(name='Test Dealership', city='Test City', state='Test State', street='Test Street', zip='Test Zip')
+
+    def test_get_dealerships(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Test Dealership')
 
 class CarMakeModelTest(TestCase):
     def setUp(self):
