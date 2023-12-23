@@ -1,7 +1,21 @@
-# Other model classes...from django.db import models
 from django.db import models
 from django.utils.timezone import now
 
+class CarDealer:
+    def __init__(self, address, city, full_name, id, lat, long, short_name, st, zip):
+        self.address = address
+        self.city = city
+        self.full_name = full_name
+        self.id = id
+        self.lat = lat
+        self.long = long
+        self.short_name = short_name
+        self.st = st
+        self.zip = zip
+
+    def __str__(self):
+        return "Dealer name: " + self.full_name
+    
 # Car Make model with fields: Name, Description, Country, Founded Date, etc.
 class CarMake(models.Model):
     name = models.CharField(max_length=255)
@@ -14,7 +28,7 @@ class CarMake(models.Model):
         return self.name
 
 # Car Dealer model with fields: Name, City, State, ST
-class CarDealer(models.Model):
+class CarDealerModel(models.Model):
     name = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     state = models.CharField(max_length=255)
@@ -42,7 +56,7 @@ class CarModel(models.Model):
 
     make = models.ForeignKey(CarMake, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    dealer = models.ForeignKey(CarDealer, on_delete=models.CASCADE)
+    dealer = models.ForeignKey(CarDealerModel, on_delete=models.CASCADE)
     car_type = models.CharField(
         max_length=2,
         choices=CAR_TYPES,
@@ -58,7 +72,7 @@ class CarModel(models.Model):
 
 # Dealer Review model with fields: Dealership, Name, Purchase, Review, Purchase Date, Car Make, Car Model, Car Year, etc.
 class DealerReview(models.Model):
-    dealership = models.ForeignKey(CarDealer, on_delete=models.CASCADE)
+    dealership = models.ForeignKey(CarDealerModel, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     purchase = models.BooleanField()
     review = models.TextField()
