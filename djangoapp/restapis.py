@@ -1,4 +1,5 @@
 import requests
+import json
 from requests.auth import HTTPBasicAuth
 from djangoapp.models import DealerReview
 
@@ -6,28 +7,35 @@ from djangoapp.models import DealerReview
 api_key = "your_api_key"
 
 # Define the get_request function
-def get_request(url, params=None, headers=None, auth=None):
-    if auth:
-        response = requests.get(url, params=params, headers=headers, auth=auth)
-    else:
-        response = requests.get(url, params=params, headers=headers)
-    response.raise_for_status()  # Raise HTTPError for bad responses
-    return response.json()
+# Cloudant credentials
+cloudant_username = '41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix'
+cloudant_api_key = 'AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8'
 
-# Define the post_request function
+def get_request(url, **kwargs):
+    print("GET from {}".format(url))
+    print("With params: {}".format(kwargs))
+    try:
+        response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=HTTPBasicAuth(cloudant_username, cloudant_api_key))
+        status_code = response.status_code
+        print("With status {}".format(status_code))
+        return response.json()
+    except:
+        print("Network exception occurred")
+        return {}
+
 def post_request(url, payload=None, headers=None):
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()  # Raise HTTPError for bad responses
-    return response.json()
+    headers = headers or {'Content-Type': 'application/json'}
+    try:
+        response = requests.post(url, json=payload, headers=headers, auth=HTTPBasicAuth(cloudant_username, cloudant_api_key))
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print("Error in post_request: {}".format(e))
+        return {}
 
-# Define the get_dealers_from_cf function
 def get_dealers_from_cf(url):
     try:
-        data = get_request(
-            url,
-            headers={'Content-Type': 'application/json'},
-            auth=HTTPBasicAuth('username', 'password'),  # Replace with actual username and password
-        )
+        data = get_request(url)
         dealers = []
         if 'docs' in data:
             for doc in data['docs']:
@@ -55,14 +63,13 @@ def get_dealers_from_cf(url):
     except requests.exceptions.RequestException as err:
         print("Error:", err)
 
-# Define the get_dealer_reviews_from_cf function
 def get_dealer_reviews_from_cf(url, dealerId):
     try:
         data = get_request(
             url,
             params={'dealerId': dealerId},
             headers={'Content-Type': 'application/json'},
-            auth=HTTPBasicAuth('username', 'password'),  # Replace with actual username and password
+            auth=HTTPBasicAuth(cloudant_username, cloudant_api_key)
         )
         reviews = []
         if 'docs' in data:
@@ -90,31 +97,22 @@ def get_dealer_reviews_from_cf(url, dealerId):
     except requests.exceptions.RequestException as err:
         print("Error:", err)
 
-# Define the get_data_from_url function
-def get_data_from_url(url):
-    params = {}  # Add any parameters you need for the request here
-    response = requests.get(
-        url,
-        params=params,
-        headers={'Content-Type': 'application/json'},
-        auth=HTTPBasicAuth('username', 'password'),  # Replace with actual username and password
-    )
-    response.raise_for_status()  # Raise HTTPError for bad responses
-    return response.json()  # Returns the response as a JSON object
+# Other imports and functions remain unchanged
 
-# Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
+# Watson NLU credentials
+watson_nlu_api_key = 'KidOOw8m-hso_lc2AgTMLdxmudJdgaJAe-dewXr62x1L'
+watson_nlu_url = 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/ea601f46-3769-4375-85f1-9c79b2d0f580'
+
 def analyze_review_sentiments(text):
-    # Call post_request() to analyze text
-    response = post_request(
-        'https://watson-nlu-api',
-        payload={'text': text},
-        headers={'Content-Type': 'application/json'},
-    )
-    # Get the returned sentiment label such as Positive or Negative
-    sentiment_label = response.get('sentiment', {}).get('label', 'Unknown')
-    return sentiment_label
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + watson_nlu_api_key
+    }
+    try:
+        response = post_request(watson_nlu_url, payload={'text': text}, headers=headers)
+        return response.get('sentiment', {}).get('label', 'Unknown')
+    except Exception as e:
+        print("Error in analyze_review_sentiments: {}".format(e))
+        return 'Unknown'
 
-if __name__ == "__main__":
-    text = "This is a review text."
-    sentiment_label = analyze_review_sentiments(text)
-    print(sentiment_label)
+# Remaining parts of the restapis.py remain unchanged
