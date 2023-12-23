@@ -1,7 +1,9 @@
+# views.py
+
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotAllowed
 import logging
-from .models import Car
+from .models import Car, CarDealer
 import requests
 from datetime import datetime
 
@@ -12,7 +14,6 @@ def add_review(request, dealer_id):
     if request.method == 'GET':
         cars = Car.objects.filter(dealer_id=dealer_id)
         return render(request, 'djangoapp/add_review.html', {'cars': cars, 'dealer_id': dealer_id})
-
     elif request.method == 'POST':
         try:
             # Validate the presence of required fields in the POST data
@@ -40,13 +41,19 @@ def add_review(request, dealer_id):
                 'car_year': car.year.year,
             }
 
-            json_payload = {
-                "review": review
+            json_payload = {"review": review}
+
+            # The Cloudant service URL for posting the review to the database
+            cloudant_service_url = "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud"
+
+            # Use your provided IAM API Key in the request header
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer Udq3_mK0zxdnBA4cx2bBE045ZYD2BtzGF5tGT20fFKOh',
             }
 
             # Make a POST request to the Cloudant server with json_payload
-            # Replace 'cloudant_server' with your actual Cloudant server URL
-            response = requests.post('cloudant_server', json=json_payload)
+            response = requests.post(cloudant_service_url, json=json_payload, headers=headers)
 
             if response.status_code == 200:
                 return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
@@ -60,14 +67,12 @@ def add_review(request, dealer_id):
         except requests.RequestException as e:
             logger.error(f"Error posting review to Cloudant: {str(e)}")
             return HttpResponse('Failed to post review to Cloudant', status=500)
-        except:
-            pass
 
 def get_dealers_from_cf():
     try:
-        # Use the actual URL of your dealer-get service
+        # The actual URL of your dealer-get service
         dealer_get_service_url = 'https://us-south.functions.appdomain.cloud/api/v1/web/54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction'
-
+        
         # Use your provided IAM API Key in the request header
         headers = {
             'Authorization': 'Bearer Udq3_mK0zxdnBA4cx2bBE045ZYD2BtzGF5tGT20fFKOh',
@@ -75,4 +80,29 @@ def get_dealers_from_cf():
         }
 
         # Make a GET request to the cloud function
-        requests.get(dealer_get_service_url, headers=headers)
+        response = requests.get(dealer_get_service_url, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            dealers = response.json()
+            return dealers
+        else:
+            logger.error(f"Error getting dealers from cloud function: {response.status_code}")
+            return []
+    except requests.RequestException as e:
+        logger.error(f"Request failed: {e}")
+        return []
+
+def get_dealerships(request):
+    if request.method == 'GET':
+        # Call the dealer-get service
+        dealers = get_dealers_from_cf()
+
+        # Load the JSON results into a list of CarDealer objects
+        dealerships = [CarDealer(**dealer) for dealer in dealers]
+
+        # Return the list of dealerships as JSON
+        dealerships_data = [{'address': dealer.address, 'city': dealer.city, 'full_name': dealer.full_name, 'id': dealer.id, 'lat': dealer.lat, 'long': dealer.long, 'short_name': dealer.short_name, 'st': dealer.st, 'zip': dealer.zip} for dealer in dealerships]
+        return JsonResponse({'dealerships': dealerships_data})
+    else:
+        return HttpResponseNotAllowed(['GET'])
