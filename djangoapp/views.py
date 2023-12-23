@@ -6,6 +6,8 @@ import logging
 from .models import Car, CarDealer
 import requests
 from datetime import datetime
+# Import the necessary functions from restapis.py
+from .restapis import get_dealers_from_cf, post_request
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -95,8 +97,9 @@ def get_dealers_from_cf():
 
 def get_dealerships(request):
     if request.method == 'GET':
-        # Call the dealer-get service
-        dealers = get_dealers_from_cf()
+        # Call get_dealers_from_cf from restapis.py
+        dealer_get_service_url = 'https://us-south.functions.appdomain.cloud/api/v1/web/54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction'
+        dealers = get_dealers_from_cf(dealer_get_service_url)
 
         # Load the JSON results into a list of CarDealer objects
         dealerships = [CarDealer(**dealer) for dealer in dealers]
