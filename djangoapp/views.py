@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseBadRequest
 import logging
 from .models import Car
 import requests
 from datetime import datetime
-from .models import CarDealer
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -61,27 +60,19 @@ def add_review(request, dealer_id):
         except requests.RequestException as e:
             logger.error(f"Error posting review to Cloudant: {str(e)}")
             return HttpResponse('Failed to post review to Cloudant', status=500)
+        except:
+            pass
 
 def get_dealers_from_cf():
-    # Replace 'dealer_get_service_url' with the actual URL of your dealer-get service
-    response = requests.get('dealer_get_service_url')
+    try:
+        # Use the actual URL of your dealer-get service
+        dealer_get_service_url = 'https://us-south.functions.appdomain.cloud/api/v1/web/54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction'
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        return response.json()
-    else:
-        logger.error(f"Error getting dealers from cloud function: {response.status_code}")
-        return []
+        # Use your provided IAM API Key in the request header
+        headers = {
+            'Authorization': 'Bearer Udq3_mK0zxdnBA4cx2bBE045ZYD2BtzGF5tGT20fFKOh',
+            'Accept': 'application/json'
+        }
 
-def get_dealerships(request):
-    if request.method == 'GET':
-        # Call the dealer-get service
-        response = get_dealers_from_cf()
-
-        # Load the JSON results into a list of CarDealer objects
-        dealerships = [CarDealer(**dealer) for dealer in response]
-
-        # Return the list of dealerships as JSON
-        return JsonResponse({'dealerships': [str(dealer) for dealer in dealerships]})
-    else:
-        return HttpResponseNotAllowed(['GET'])
+        # Make a GET request to the cloud function
+        requests.get(dealer_get_service_url, headers=headers)
