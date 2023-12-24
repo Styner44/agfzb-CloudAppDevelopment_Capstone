@@ -9,8 +9,9 @@ class CarMake(models.Model):
     founded_date = models.DateField()
     created_at = models.DateTimeField(default=now)
 
-    def __str__(self):
-        return self.name
+def __str__(self):
+    return str(self.name)
+
 
 # Car Dealer model with fields: Name, City, State, ST, etc.
 class CarDealerModel(models.Model):
@@ -45,10 +46,13 @@ class CarModel(models.Model):
     mpg = models.DecimalField(max_digits=5, decimal_places=2)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 # Dealer Review model with fields: Dealership, Name, Purchase, Review, Purchase Date, Car Make, Car Model, Car Year, Sentiment, ID
 class DealerReview(models.Model):
+    """
+    Represents a review of a car dealership.
+    """
     dealership = models.ForeignKey(CarDealerModel, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     purchase = models.BooleanField()
