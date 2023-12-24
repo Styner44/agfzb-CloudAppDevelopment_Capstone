@@ -67,20 +67,14 @@ def get_dealers_from_cf(url):
         return []
 
 def get_dealer_reviews_from_cf(url, dealer_id):
-    """
-    Get the reviews for a specific dealer from the specified URL.
-    """
     try:
-        data = get_request(
-            url,
-            params={'dealerId': dealer_id},
-            headers={'Content-Type': 'application/json'},
-            auth=HTTPBasicAuth(CLOUDANT_USERNAME, CLOUDANT_API_KEY),
-        )
-        
+        data = get_request(url, params={'dealerId': dealer_id})
         reviews = []
         if 'docs' in data:
             for doc in data['docs']:
+                # Perform sentiment analysis
+                sentiment = analyze_review_sentiments(doc['review'])
+
                 review = DealerReview(
                     dealership=doc['dealership'],
                     name=doc['name'],
@@ -90,7 +84,7 @@ def get_dealer_reviews_from_cf(url, dealer_id):
                     car_make=doc['car_make'],
                     car_model=doc['car_model'],
                     car_year=doc['car_year'],
-                    sentiment=doc['sentiment'],
+                    sentiment=sentiment,  # Use analyzed sentiment
                     id=doc['id'],
                 )
                 reviews.append(review)
@@ -98,6 +92,7 @@ def get_dealer_reviews_from_cf(url, dealer_id):
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return []
+
 
 
 # Other imports and functions remain unchanged
