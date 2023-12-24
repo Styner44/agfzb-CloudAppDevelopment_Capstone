@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 from djangoapp.models import DealerReview
 
 # Define the missing variable
-API_KEY = "your_api_key"
+API_KEY = "AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8"
 
 # Define the get_request function
 # Cloudant credentials
@@ -123,4 +123,18 @@ def get_dealer_reviews_from_cf(url, dealer_id):
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return []
-    
+  
+   # Example usage
+dealers_url = "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud/dealers/_all_docs"
+reviews_url = "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud/reviews/_find"
+
+# Get dealers from Cloudant
+dealers = get_dealers_from_cf(dealers_url)
+for dealer in dealers:
+    print(dealer)
+
+# Get reviews for a specific dealer from Cloudant
+dealer_id = "your-dealer-id"
+reviews =get_dealer_reviews_from_cf(reviews_url, dealer_id)
+for review in reviews:
+    print(review) 
