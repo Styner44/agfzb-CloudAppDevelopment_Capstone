@@ -21,10 +21,8 @@ def get_request(url, **kwargs):
     print(f"GET from {url}")
     print(f"With params: {kwargs}")
     try:
-        api_key = kwargs.get("api_key")
-        
-        if api_key:
-            auth = HTTPBasicAuth('apikey', api_key)
+        if 'api_key' in kwargs:
+            auth = HTTPBasicAuth('apikey', kwargs['api_key'])
             response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=auth, timeout=10)
         else:
             response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, timeout=10)
@@ -36,18 +34,29 @@ def get_request(url, **kwargs):
         print(f"Network exception occurred: {e}")
         return {}
 
-def post_request(url, payload=None, headers=None):
+def post_request(url, json_payload, auth_needed=True, **kwargs):
     """
-    Make a POST request to the specified URL with the given payload and headers.
+    Make a POST request to the specified URL with the given JSON payload.
+    - If auth_needed is True, use HTTP Basic Auth with Cloudant credentials.
+    - kwargs can be used to pass additional parameters like headers.
     """
-    headers = headers or {'Content-Type': 'application/json'}
+    headers = kwargs.get('headers', {'Content-Type': 'application/json'})
+    
+    # If authentication is needed, use HTTPBasicAuth
+    if auth_needed:
+        auth = HTTPBasicAuth(CLOUDANT_USERNAME, CLOUDANT_API_KEY)
+    else:
+        auth = None
+
     try:
-        response = requests.post(url, json=payload, headers=headers, auth=HTTPBasicAuth(CLOUDANT_USERNAME, CLOUDANT_API_KEY), timeout=10)
+        response = requests.post(url, json=json_payload, headers=headers, auth=auth, **kwargs)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error in post_request: {e}")
         return {}
+
+# ... [The rest of your existing methods]
 
 def get_dealers_from_cf(url):
     """

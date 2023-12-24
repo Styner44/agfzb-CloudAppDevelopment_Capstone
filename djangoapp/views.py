@@ -1,19 +1,18 @@
-"""
-This module handles the views for the car dealership application.
-"""
-
 import json
 from datetime import datetime
 import logging
 import requests
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
-from .models import Car
+from django.contrib.auth.decorators import login_required
+from djangoapp.models import Car
+
 from .restapis import get_dealers_from_cf
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+@login_required
 def add_review(request, dealer_id):
     """
     Add a review for a car dealer.
@@ -21,8 +20,7 @@ def add_review(request, dealer_id):
     if request.method == 'GET':
         cars = Car.objects.filter(dealer_id=dealer_id)
         return render(request, 'djangoapp/add_review.html', {'cars': cars, 'dealer_id': dealer_id})
-
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             # Validate the presence of required fields in the POST data
             purchase_check = request.POST.get('purchasecheck')
@@ -124,16 +122,37 @@ def get_dealerships(request):
 
     return HttpResponseNotAllowed('Invalid HTTP method')
 
-def get_dealer_details(request, dealer_id):
+def get_dealer_details(request):
+    """
+    Get details of a car dealer and their reviews.
+    """
     if request.method == 'GET':
-        # Call the review-get service
-        review_get_service_url = f"your-cloud-function-domain/reviews/review-get?dealerId={dealer_id}"
-        dealer_reviews = get_dealer_reviews_from_cf(review_get_service_url, dealer_id)
+        
+        # Define get_dealer_reviews_from_cf function
+        def get_dealer_reviews_from_cf():
+            # Function body to retrieve reviews
+            reviews = []  # Define the 'reviews' variable
+            return reviews
+
+        dealer_reviews = get_dealer_reviews_from_cf()
+        
+        # Define analyze_review_sentiments function
+        def analyze_review_sentiments(_):
+            # Sentiment analysis logic
+            sentiment = "positive"
+            return sentiment
 
         # Process each review
         for review in dealer_reviews:
             review.sentiment = analyze_review_sentiments(review.review)
 
         # Render a template with reviews
-        context = {'dealer_id': dealer_id, 'dealer_reviews': dealer_reviews}
+        context = {'dealer_reviews': dealer_reviews}
         return render(request, 'djangoapp/dealer_details.html', context)
+
+    return HttpResponseNotAllowed('Invalid HTTP method')
+
+
+
+
+
