@@ -24,7 +24,8 @@ def get_request(url, **kwargs):
         api_key = kwargs.get("api_key")
         
         if api_key:
-            response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=HTTPBasicAuth('apikey', api_key), timeout=10)
+            auth = HTTPBasicAuth('apikey', api_key)
+            response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=auth, timeout=10)
         else:
             response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, timeout=10)
             
@@ -115,6 +116,11 @@ def get_dealer_reviews_from_cf(url, dealer_id):
                     car_make=doc['car_make'],
                     car_model=doc['car_model'],
                     car_year=doc['car_year'],
-                    sentiment='',  # Initialize sentiment attribute```
- I'm not sure I understand what you are saying. Could you explain?
-```
+                    sentiment=analyze_review_sentiments(doc['review'])  # Analyze sentiment using Watson NLU
+                )
+                reviews.append(review)
+        return reviews
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return []
+    
