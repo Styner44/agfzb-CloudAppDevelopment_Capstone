@@ -1,4 +1,3 @@
-import json
 import requests
 from requests.auth import HTTPBasicAuth
 from djangoapp.models import DealerReview
@@ -78,6 +77,7 @@ def get_dealer_reviews_from_cf(url, dealer_id):
             headers={'Content-Type': 'application/json'},
             auth=HTTPBasicAuth(CLOUDANT_USERNAME, CLOUDANT_API_KEY),
         )
+        
         reviews = []
         if 'docs' in data:
             for doc in data['docs']:
@@ -98,6 +98,7 @@ def get_dealer_reviews_from_cf(url, dealer_id):
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return []
+
 
 # Other imports and functions remain unchanged
 
