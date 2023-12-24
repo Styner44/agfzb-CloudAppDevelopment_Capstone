@@ -1,33 +1,18 @@
 from django.db import models
 from django.utils.timezone import now
 
-class CarDealer:
-    def __init__(self, address, city, full_name, id, lat, long, short_name, st, zip):
-        self.address = address
-        self.city = city
-        self.full_name = full_name
-        self.id = id
-        self.lat = lat
-        self.long = long
-        self.short_name = short_name
-        self.st = st
-        self.zip = zip
-
-    def __str__(self):
-        return "Dealer name: " + self.full_name
-    
 # Car Make model with fields: Name, Description, Country, Founded Date, etc.
 class CarMake(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    created_at = models.DateTimeField(default=now)
     country = models.CharField(max_length=255)
     founded_date = models.DateField()
+    created_at = models.DateTimeField(default=now)
 
     def __str__(self):
         return self.name
 
-# Car Dealer model with fields: Name, City, State, ST
+# Car Dealer model with fields: Name, City, State, ST, etc.
 class CarDealerModel(models.Model):
     name = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
@@ -48,20 +33,12 @@ class CarModel(models.Model):
     SEDAN = 'SD'
     SUV = 'SV'
     WAGON = 'WG'
-    CAR_TYPES = [
-        (SEDAN, 'Sedan'),
-        (SUV, 'SUV'),
-        (WAGON, 'Wagon'),
-    ]
+    CAR_TYPES = [(SEDAN, 'Sedan'), (SUV, 'SUV'), (WAGON, 'Wagon')]
 
     make = models.ForeignKey(CarMake, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     dealer = models.ForeignKey(CarDealerModel, on_delete=models.CASCADE)
-    car_type = models.CharField(
-        max_length=2,
-        choices=CAR_TYPES,
-        default=SEDAN,
-    )
+    car_type = models.CharField(max_length=2, choices=CAR_TYPES, default=SEDAN)
     year = models.IntegerField()
     engine = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -70,7 +47,7 @@ class CarModel(models.Model):
     def __str__(self):
         return self.name
 
-# Dealer Review model with fields: Dealership, Name, Purchase, Review, Purchase Date, Car Make, Car Model, Car Year, etc.
+# Dealer Review model with fields: Dealership, Name, Purchase, Review, Purchase Date, Car Make, Car Model, Car Year, Sentiment, ID
 class DealerReview(models.Model):
     dealership = models.ForeignKey(CarDealerModel, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -80,8 +57,8 @@ class DealerReview(models.Model):
     car_make = models.CharField(max_length=255)
     car_model = models.CharField(max_length=255)
     car_year = models.IntegerField()
-    sentiment = models.CharField(max_length=255)
+    sentiment = models.CharField(max_length=255)  # The sentiment value will be determined by Watson NLU service
     id = models.AutoField(primary_key=True)
 
     def __str__(self):
-        return self.name
+        return f"Review by {self.name} on {self.purchase_date}"

@@ -123,3 +123,17 @@ def get_dealerships(request):
         return HttpResponse(json.dumps(dealerships_data), content_type='application/json')
 
     return HttpResponseNotAllowed('Invalid HTTP method')
+
+def get_dealer_details(request, dealer_id):
+    if request.method == 'GET':
+        # Call the review-get service
+        review_get_service_url = f"your-cloud-function-domain/reviews/review-get?dealerId={dealer_id}"
+        dealer_reviews = get_dealer_reviews_from_cf(review_get_service_url, dealer_id)
+
+        # Process each review
+        for review in dealer_reviews:
+            review.sentiment = analyze_review_sentiments(review.review)
+
+        # Render a template with reviews
+        context = {'dealer_id': dealer_id, 'dealer_reviews': dealer_reviews}
+        return render(request, 'djangoapp/dealer_details.html', context)
