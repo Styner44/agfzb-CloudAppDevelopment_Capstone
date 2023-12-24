@@ -115,4 +115,6 @@ def get_dealer_reviews_from_cf(url, dealer_id):
                     car_make=doc['car_make'],
                     car_model=doc['car_model'],
                     car_year=doc['car_year'],
-                    sentiment='',  # Initialize sentiment attribute
+                    sentiment='',  # Initialize sentiment attribute```
+ I'm not sure I understand what you are saying. Could you explain?
+```
