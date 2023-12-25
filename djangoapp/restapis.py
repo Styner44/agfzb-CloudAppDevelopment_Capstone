@@ -1,6 +1,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
-from djangoapp.models import DealerReview
+from .models import DealerReview
 
 # Define the missing variable
 API_KEY = "AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8"
@@ -12,27 +12,40 @@ CLOUDANT_API_KEY = 'AOk7Ln1k62vPK4QYt_dvblE2NKU_fFNG1wNfV6YJzcU8'
 
 # Watson NLU credentials
 WATSON_NLU_API_KEY = 'KidOOw8m-hso_lc2AgTMLdxmudJdgaJAe-dewXr62x1L'
-WATSON_NLU_URL = 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/ea601f46-3769-4375-85f1-9c79b2d0f580'
+WATSON_NLU_URL = (
+    'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/'
+    'ea601f46-3769-4375-85f1-9c79b2d0f580'
+)
 
-def get_request(url, **kwargs):
+def get_request(url, api_key=False, **kwargs):
     """
-    Make a GET request to the specified URL with the given parameters.
+    Make a GET request to the specified URL.
     """
     print(f"GET from {url}")
-    print(f"With params: {kwargs}")
     try:
-        if 'api_key' in kwargs:
-            auth = HTTPBasicAuth('apikey', kwargs['api_key'])
-            response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=auth, timeout=10)
+        headers = {'Content-Type': 'application/json'}
+        if api_key:
+            # Basic authentication GET
+            response = requests.get(
+                url,
+                headers=headers,
+                params=kwargs,
+                auth=HTTPBasicAuth('apikey', api_key),
+                timeout=10
+            )
         else:
-            response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, timeout=10)
-            
-        status_code = response.status_code
-        print(f"With status {status_code}")
-        return response.json()
-    except Exception as e:
-        print(f"Network exception occurred: {e}")
-        return {}
+            # No authentication GET
+            response = requests.get(
+                url,
+                headers=headers,
+                params=kwargs,
+                timeout=10
+            )
+        response.raise_for_status()  # If the request failed, this will raise a HTTPError
+        return response.json()  # Return the JSON response from the server
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while making GET request: {e}")
+        return {}  # Return an empty dictionary when an exception occurs
 
 def post_request(url, json_payload, auth_needed=True, **kwargs):
     """
@@ -41,7 +54,7 @@ def post_request(url, json_payload, auth_needed=True, **kwargs):
     - kwargs can be used to pass additional parameters like headers.
     """
     headers = kwargs.get('headers', {'Content-Type': 'application/json'})
-    
+
     # If authentication is needed, use HTTPBasicAuth
     if auth_needed:
         auth = HTTPBasicAuth(CLOUDANT_USERNAME, CLOUDANT_API_KEY)
@@ -49,7 +62,14 @@ def post_request(url, json_payload, auth_needed=True, **kwargs):
         auth = None
 
     try:
-        response = requests.post(url, json=json_payload, headers=headers, auth=auth, **kwargs)
+        response = requests.post(
+            url,
+            json=json_payload,
+            headers=headers,
+            auth=auth,
+            timeout=10,
+            **kwargs
+        )
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -103,7 +123,7 @@ def analyze_review_sentiments(dealerreview):
         'Authorization': 'Basic ' + WATSON_NLU_API_KEY
     }
     try:
-        response = post_request(url, payload=params, headers=headers)
+        response = post_request(url, json_payload=params, headers=headers)
         sentiment = response.get('sentiment', {}).get('label', 'Unknown')
         return sentiment
     except Exception as e:
@@ -111,6 +131,9 @@ def analyze_review_sentiments(dealerreview):
         return 'Unknown'
 
 def get_dealer_reviews_from_cf(url, dealer_id):
+    """
+    Get the reviews for a specific dealer from Cloudant.
+    """
     try:
         data = get_request(url, params={'dealerId': dealer_id})
         reviews = []
@@ -132,18 +155,24 @@ def get_dealer_reviews_from_cf(url, dealer_id):
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return []
-  
-   # Example usage
-dealers_url = "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud/dealers/_all_docs"
-reviews_url = "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud/reviews/_find"
+
+# Example usage
+DEALERS_URL = (
+    "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud/"
+    "dealers/_all_docs"
+)
+REVIEWS_URL = (
+    "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix.cloudantnosqldb.appdomain.cloud/"
+    "reviews/_find"
+)
 
 # Get dealers from Cloudant
-dealers = get_dealers_from_cf(dealers_url)
-for dealer in dealers:
-    print(dealer)
+dealers_cf = get_dealers_from_cf(DEALERS_URL)
+for dealer_cf in dealers_cf:
+    print(dealer_cf)
 
 # Get reviews for a specific dealer from Cloudant
-dealer_id = "your-dealer-id"
-reviews =get_dealer_reviews_from_cf(reviews_url, dealer_id)
-for review in reviews:
-    print(review) 
+DEALER_ID = "your-dealer-id"
+reviews_cf = get_dealer_reviews_from_cf(REVIEWS_URL, DEALER_ID)
+for review_cf in reviews_cf:
+    print(review_cf)

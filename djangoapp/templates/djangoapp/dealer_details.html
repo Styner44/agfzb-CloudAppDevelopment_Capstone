@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dealership Review</title>
     {% load static %}
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="path/to/external.css">
 </head>
-
 <body>
-    <!-- Add your navigation bar content here -->
     <nav>
-        <!-- Include the necessary links or buttons -->
         <a href="{% url 'djangoapp:index' %}">Home</a>
         <a href="{% url 'djangoapp:another_page' %}">Another Page</a>
         
@@ -18,19 +17,6 @@
             <a href="{% url 'djangoapp:add_review' %}">Add Review</a>
         {% endif %}
     </nav>
-
-    <!-- Add reviews as cards -->
-    <div class="card-columns">
-        {% for review in reviews %}
-            <div class="card">
-                <img class="card-img-left" src="{{MEDIA_URL}}/emoji/{{review.sentiment}}.png">
-                <div class="card-body">
-                    <h5 class="card-title">{{ review.car_make }} {{ review.car_model }} ({{ review.car_year }})</h5>
-                    <p class="card-text">{{ review.content }}</p>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
 
     {% block content %}
         <table class="table" id="table" data-filter-control="true">

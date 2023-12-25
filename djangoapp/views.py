@@ -1,4 +1,7 @@
-import json
+"""
+This module contains views for adding reviews and getting dealer details in a Django application.
+"""
+
 from datetime import datetime
 import logging
 import requests
@@ -7,152 +10,107 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAll
 from django.contrib.auth.decorators import login_required
 from djangoapp.models import Car
 
-from .restapis import get_dealers_from_cf
-
-# Get an instance of a logger
+# Logger setup
 logger = logging.getLogger(__name__)
 
 @login_required
 def add_review(request, dealer_id):
-    """
-    Add a review for a car dealer.
-    """
+    """Add a review for a car dealer."""
     if request.method == 'GET':
         cars = Car.objects.filter(dealer_id=dealer_id)
         return render(request, 'djangoapp/add_review.html', {'cars': cars, 'dealer_id': dealer_id})
-    elif request.method == 'POST':
-        try:
-            # Validate the presence of required fields in the POST data
-            purchase_check = request.POST.get('purchasecheck')
-            content = request.POST.get('content')
-            purchasedate = request.POST.get('purchasedate')
-            car_id = request.POST.get('car')
+    
+    if request.method == 'POST':
+        # Process POST request
+        return process_add_review_post(request, dealer_id)
 
-            if not (purchase_check and content and purchasedate and car_id):
-                return HttpResponseBadRequest('Invalid or missing POST data')
+    return HttpResponseBadRequest('Invalid HTTP method')
 
-            # Convert purchasedate to ISO format
-            purchase_date = datetime.strptime(purchasedate, '%m/%d/%Y').isoformat()
+def process_add_review_post(request, dealer_id):
+    """Process POST request for add_review."""
+    purchase_check = request.POST.get('purchasecheck')
+    content = request.POST.get('content')
+    purchasedate = request.POST.get('purchasedate')
+    car_id = request.POST.get('car')
 
-            car = Car.objects.get(id=car_id)
+    if not (purchase_check and content and purchasedate and car_id):
+        return HttpResponseBadRequest('Invalid or missing POST data')
 
-            review = {
-                'dealership': dealer_id,
-                'name': request.user.username,
-                'purchase': purchase_check,
-                'review': content,
-                'purchase_date': purchase_date,
-                'car_make': car.make.name,
-                'car_model': car.name,
-                'car_year': car.year.year,
-            }
+    try:
+        purchase_date = datetime.strptime(purchasedate, '%m/%d/%Y').isoformat()
+        car = Car.objects.get(id=car_id)
 
-            json_payload = {"review": review}
+        review = {
+            'dealership': dealer_id,
+            'name': request.user.username,
+            'purchase': purchase_check,
+            'review': content,
+            'purchase_date': purchase_date,
+            'car_make': car.make.name,
+            'car_model': car.name,
+            'car_year': car.year.year,
+        }
 
-            # The Cloudant service URL for posting the review to the database
-            cloudant_service_url = (
-                "https://41b72835-e355-48ae-9d54-2ba6dc3c140e-bluemix."
-                "cloudantnosqldb.appdomain.cloud"
-            )
-
-            # Use your provided IAM API Key in the request header
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer Udq3_mK0zxdnBA4cx2bBE045ZYD2BtzGF5tGT20fFKOh',
-            }
-
-            # Make a POST request to the Cloudant server with json_payload
-            response = requests.post(
-                cloudant_service_url,
-                json=json_payload,
-                headers=headers,
-                timeout=10
-            )
-
-            if response.status_code == 200:
-                return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
-
-            return HttpResponse(
-                f'Failed to post review. Status code: {response.status_code}',
-                status=response.status_code
-            )
-        except Car.DoesNotExist:
-            return HttpResponseBadRequest('Invalid car ID')
-        except ValueError:
-            return HttpResponseBadRequest('Invalid date format')
-        except requests.RequestException as e:
-            logger.error("Error posting review to Cloudant: %s", str(e))
-            return HttpResponse('Failed to post review to Cloudant', status=500)
-
-    return HttpResponseNotAllowed('Invalid HTTP method')
-
-def get_dealerships(request):
-    """
-    Get a list of car dealerships. Returns JSON data by default.
-    If a query parameter 'names_only' is set to 'true', returns a space-separated string of dealer short names.
-    """
-    if request.method == 'GET':
-        # Call get_dealers_from_cf from restapis.py
-        dealer_get_service_url = (
-            'https://us-south.functions.appdomain.cloud/api/v1/web/54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction'
+        json_payload = {"review": review}
+        review_post_url = (
+            "https://us-south.functions.appdomain.cloud/api/v1/web/"
+            "54ee907b-434c-4f03-a1b3-513c235fbeb4/default/review-post"
         )
-        dealers = get_dealers_from_cf(dealer_get_service_url)
 
-        # Check if 'names_only' query parameter is set to 'true'
-        if request.GET.get('names_only', '').lower() == 'true':
-            # Extract short names of dealers and return as a space-separated string
-            dealer_names = ' '.join([dealer['short_name'] for dealer in dealers])
-            return HttpResponse(dealer_names)
+        response = requests.post(review_post_url, json=json_payload, timeout=10)
+        if response.status_code == 200:
+            return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
+        
+        logger.error('Failed to post review. Status code: %s', response.status_code)
+        return HttpResponse(f'Failed to post review. Status code: {response.status_code}', status=response.status_code)
 
-        # Create a list of dealership data and return as JSON
-        dealerships_data = [
-            {
-                'address': dealer.address,
-                'city': dealer.city,
-                'full_name': dealer.full_name,
-                'id': dealer.id,
-                'lat': dealer.lat,
-                'long': dealer.long,
-                'short_name': dealer.short_name,
-                'st': dealer.st,
-                'zip': dealer.zip
-            } for dealer in dealers
-        ]
-        return HttpResponse(json.dumps(dealerships_data), content_type='application/json')
-
-    return HttpResponseNotAllowed('Invalid HTTP method')
+    except Car.DoesNotExist:
+        logger.error('Invalid car ID')
+        return HttpResponseBadRequest('Invalid car ID')
+    except ValueError:
+        logger.error('Invalid date format')
+        return HttpResponseBadRequest('Invalid date format')
+    except Exception as e:
+        logger.error('Error posting review: %s', str(e))
+        return HttpResponse(f'Error posting review: {str(e)}', status=500)
 
 def get_dealer_details(request):
-    """
-    Get details of a car dealer and their reviews.
-    """
+    """Get details of a car dealer and their reviews."""
     if request.method == 'GET':
-        
-        # Define get_dealer_reviews_from_cf function
-        def get_dealer_reviews_from_cf():
-            # Function body to retrieve reviews
-            reviews = []  # Define the 'reviews' variable
-            return reviews
+        dealer_id = request.GET.get('dealer_id')
+        if not dealer_id:
+            return HttpResponseBadRequest('Missing dealer_id')
 
-        dealer_reviews = get_dealer_reviews_from_cf()
-        
-        # Define analyze_review_sentiments function
-        def analyze_review_sentiments(_):
-            # Sentiment analysis logic
-            sentiment = "positive"
-            return sentiment
-
-        # Process each review
+        dealer_reviews = get_dealer_reviews_from_cf(dealer_id)
         for review in dealer_reviews:
-            review.sentiment = analyze_review_sentiments(review.review)
+            review['sentiment'] = analyze_review_sentiments(review['review'])
 
-        # Render a template with reviews
         context = {'dealer_reviews': dealer_reviews}
         return render(request, 'djangoapp/dealer_details.html', context)
 
     return HttpResponseNotAllowed('Invalid HTTP method')
 
+def get_dealer_reviews_from_cf(dealer_id):
+    """Retrieves dealer reviews from a cloud function."""
+    dealer_reviews_url = (
+        f"https://us-south.functions.appdomain.cloud/api/v1/web/"
+        f"54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction/{dealer_id}/reviews"
+    )
+    headers = {'Authorization': 'Bearer KidOOw8m-hso_lc2AgTMLdxmudJdgaJAe-dewXr62x1L'}
+    response = requests.get(dealer_reviews_url, headers=headers, timeout=10)
+    if response.status_code == 200:
+        return response.json()
+    return []
 
-
-
-
+def analyze_review_sentiments(review_text):
+    """Analyzes the sentiment of a review text using Watson NLU."""
+    sentiment_analysis_url = (
+        "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/"
+        "instances/ea601f46-3769-4375-85f1-9c79b2d0f580"
+    )
+    headers = {'Authorization': 'Bearer KidOOw8m-hso_lc2AgTMLdxmudJdgaJAe-dewXr62x1L'}
+    data = {"text": review_text}
+    response = requests.post(sentiment_analysis_url, headers=headers, json=data, timeout=10)
+    if response.status_code == 200:
+        return response.json().get('sentiment', {}).get('document', {}).get('label', 'neutral')
+    return "neutral"
