@@ -13,6 +13,9 @@ from djangoapp.models import Car
 # Logger setup
 logger = logging.getLogger(__name__)
 
+def about(request):
+    return render(request, 'djangoapp/about.html')
+
 @login_required
 def add_review(request, dealer_id):
     """Add a review for a car dealer."""
