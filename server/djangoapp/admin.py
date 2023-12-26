@@ -15,7 +15,7 @@ class CarMakeAdmin(admin.ModelAdmin):
 # Register the models with the admin site
 # CarMake is registered with the custom CarMakeAdmin, which includes CarModelInline
 admin.site.register(CarMake, CarMakeAdmin)
-# CarModel, CarDealerModel, and DealerReview are registered with the default admin
+# CarModel, CarDealer, and DealerReview are registered with the default admin
 admin.site.register(CarModel)
-admin.site.register(CarDealerModel)  # Change this to use CarDealerModel
+admin.site.register(CarDealerModel)
 admin.site.register(DealerReview)
