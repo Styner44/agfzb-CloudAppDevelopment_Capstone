@@ -73,6 +73,11 @@ def process_add_review_post(request, dealer_id):
     except Exception as e:
         logger.error('Error posting review: %s', str(e))
         return HttpResponse(f'Error posting review: {str(e)}', status=500)
+  
+def get_dealerships(request):
+    context={}
+    print(get_dealer_reviews_from_cf(3))
+    return HttpResponse("Hello kishana")
 
 def get_dealer_details(request):
     """Get details of a car dealer and their reviews."""
@@ -114,3 +119,4 @@ def analyze_review_sentiments(review_text):
     if response.status_code == 200:
         return response.json().get('sentiment', {}).get('document', {}).get('label', 'neutral')
     return "neutral"
+
