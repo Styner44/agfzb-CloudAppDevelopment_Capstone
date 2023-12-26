@@ -10,7 +10,7 @@ from djangoapp import views
 app_name = 'DjangoApp'  # Renamed 'app_name' to conform to UPPER_CASE naming style
 
 urlpatterns = [
-    path("kishana",views.get_dealerships,name='TEST')
+    path('dealerships/', views.get_dealerships, name='dealerships'),
     # path('', views.get_dealerships, name='index'),
     # path('about/', views.about, name='about'),
     # path('contact/', views.contact, name='contact'),
