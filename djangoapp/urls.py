@@ -7,7 +7,7 @@ from django.conf import settings
 from djangoapp import views
 
 
-app_name = 'DjangoApp'  # Renamed 'app_name' to conform to UPPER_CASE naming style
+app_name = 'djangoApp'  # Renamed 'app_name' to conform to UPPER_CASE naming style
 
 urlpatterns = [
     path('dealerships/', views.get_dealerships, name='dealerships'),
