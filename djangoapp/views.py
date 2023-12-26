@@ -9,12 +9,13 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from djangoapp.models import Car
-from .models import CarDealerModel  # Import the correct model name
-
 
 # Logger setup
 logger = logging.getLogger(__name__)
 
+def about(request):
+    return render(request, 'djangoapp/about.html')
+    
 @login_required
 def add_review(request, dealer_id):
     """Add a review for a car dealer."""
@@ -78,10 +79,7 @@ def process_add_review_post(request, dealer_id):
   
 def get_dealerships(request):
     context={}
-# Assuming you have a function that gets dealership data, replace `get_dealers_from_cf` with the actual function name
-    dealerships = CarDealerModel.objects.all()  # Fetch all dealerships from your database
-    context["dealerships"] = dealerships  # Add dealerships to context
-    return render(request, 'djangoapp/index.html', context)  # Render the page with context
+    return HttpResponse("Hello World")
 
 def get_dealer_details(request):
     """Get details of a car dealer and their reviews."""
@@ -123,4 +121,5 @@ def analyze_review_sentiments(review_text):
     if response.status_code == 200:
         return response.json().get('sentiment', {}).get('document', {}).get('label', 'neutral')
     return "neutral"
+
 
