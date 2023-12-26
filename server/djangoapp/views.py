@@ -73,6 +73,10 @@ def process_add_review_post(request, dealer_id):
     except Exception as e:
         logger.error('Error posting review: %s', str(e))
         return HttpResponse(f'Error posting review: {str(e)}', status=500)
+  
+def get_dealerships(request):
+    context={}
+    return HttpResponse("Hello World")
 
 def get_dealer_details(request):
     """Get details of a car dealer and their reviews."""
