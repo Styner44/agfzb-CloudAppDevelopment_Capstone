@@ -79,8 +79,10 @@ def process_add_review_post(request, dealer_id):
         return HttpResponse(f'Error posting review: {str(e)}', status=500)
   
 def get_dealerships(request):
-    context={}
-    return HttpResponse("Hello World")
+    context = {}
+    dealerships = get_dealers_from_cf()  # Assuming this function fetches dealerships
+    context['dealership_list'] = dealerships
+    return render(request, 'djangoapp/index.html', context)
 
 def get_dealer_details(request):
     """Get details of a car dealer and their reviews."""
