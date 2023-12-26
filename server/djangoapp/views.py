@@ -8,7 +8,8 @@ import requests
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
-from djangoapp.models import Car
+from djangoapp.models import CarDealerModel
+from djangoapp.models import Car, CarDealerModel  # Added CarDealerModel here
 
 # Logger setup
 logger = logging.getLogger(__name__)
@@ -121,3 +122,19 @@ def analyze_review_sentiments(review_text):
     if response.status_code == 200:
         return response.json().get('sentiment', {}).get('document', {}).get('label', 'neutral')
     return "neutral"
+
+# Add the new function here
+def get_dealer_by_id(request, dealer_id):
+    """
+    Fetches details for a specific dealer by ID.
+    """
+    try:
+        # Fetch the dealer from the database using the dealer ID
+        dealer = CarDealerModel.objects.get(id=dealer_id)
+        # Render a template with dealer details (you need to create this template)
+        return render(request, 'djangoapp/dealer_by_id.html', {'dealer': dealer})
+    except CarDealerModel.DoesNotExist:
+        # If the dealer is not found, return an error message
+        return HttpResponse('Dealer not found', status=404)
+
+# ... [any other code that might be below] ...
