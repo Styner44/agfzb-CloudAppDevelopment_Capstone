@@ -139,4 +139,6 @@ def get_dealer_by_id(request, dealer_id):
         # If the dealer is not found, return an error message
         return HttpResponse('Dealer not found', status=404)
 
-# ... [any other code that might be below] ...
+# ... [any other code that might be below] ...def contact(request):
+    return render(request, 'djangoapp/contact.html')
+
