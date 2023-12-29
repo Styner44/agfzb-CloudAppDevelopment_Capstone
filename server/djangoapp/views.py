@@ -158,7 +158,7 @@ def list_dealerships(request):
 
 def get_dealers_from_cf():
     """Fetches dealerships from a cloud function."""
-    dealerships_url = "https://us-south.functions.appdomain.cloud/api/v1/web/54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction"
+    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
     response = requests.get(dealerships_url, timeout=10)
     if response.status_code == 200:
         return response.json()
