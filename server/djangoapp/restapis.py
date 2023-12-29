@@ -86,25 +86,27 @@ def get_dealers_from_cf(url):
         data = get_request(url)
         dealers = []
         if 'docs' in data:
-            for doc in data['docs']:
-                dealer = {
-                    'id': doc['id'],
-                    'name': doc['name'],
-                    'city': doc['city'],
-                    'state': doc['state'],
-                    'st': doc['st'],
-                    'address': doc['address'],
-                    'zip': doc['zip'],
-                    'lat': doc['lat'],
-                    'long': doc['long'],
-                    'short_name': doc['short_name'],
-                    'dealer_type': doc['dealer_type'],
-                }
-                dealers.append(dealer)
+            for dealer in data['docs']:  # This line might be different based on your data structure
+                dealer_doc = dealer  # Updated line as per your instruction
+                # The rest of your code that processes dealer_doc
+                dealers.append({
+                    'id': dealer_doc['id'],
+                    'name': dealer_doc['name'],
+                    'city': dealer_doc['city'],
+                    'state': dealer_doc['state'],
+                    'st': dealer_doc['st'],
+                    'address': dealer_doc['address'],
+                    'zip': dealer_doc['zip'],
+                    'lat': dealer_doc['lat'],
+                    'long': dealer_doc['long'],
+                    'short_name': dealer_doc['short_name'],
+                    'dealer_type': dealer_doc['dealer_type'],
+                })
         return dealers
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return []
+
 
 def analyze_review_sentiments(dealerreview):
     """
