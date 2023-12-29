@@ -155,3 +155,11 @@ def list_dealerships(request):
     """View a list of all car dealerships."""
     dealerships = CarDealerModel.objects.all()
     return render(request, 'djangoapp/list_dealerships.html', {'dealerships': dealerships})
+
+def get_dealers_from_cf():
+    """Fetches dealerships from a cloud function."""
+    dealerships_url = "https://us-south.functions.appdomain.cloud/api/v1/web/54ee907b-434c-4f03-a1b3-513c235fbeb4/default/myAction"
+    response = requests.get(dealerships_url, timeout=10)
+    if response.status_code == 200:
+        return response.json()
+    return []
