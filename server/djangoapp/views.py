@@ -77,14 +77,26 @@ def process_add_review_post(request, dealer_id):
     except Exception as e:
         logger.error('Error posting review: %s', str(e))
         return HttpResponse(f'Error posting review: {str(e)}', status=500)
-  
+
+def contact(request):
+    return render(request, 'djangoapp/contact.html')
+
+def view_dealership(request, dealer_id):
+    """View a specific car dealership."""
+    try:
+        dealership = CarDealerModel.objects.get(id=dealer_id)
+    except CarDealerModel.DoesNotExist:
+        return HttpResponseBadRequest('Dealership not found')
+
+    return render(request, 'djangoapp/view_dealership.html', {'dealership': dealership})
+
 def get_dealerships(request):
     context = {}
     dealerships = get_dealers_from_cf()  # Assuming this function fetches dealerships
     context['dealership_list'] = dealerships
     return render(request, 'djangoapp/index.html', context)
 
-def get_dealer_details(request):
+def get_dealer_details(request,  dealer_id):
     """Get details of a car dealer and their reviews."""
     if request.method == 'GET':
         dealer_id = request.GET.get('dealer_id')
@@ -139,6 +151,7 @@ def get_dealer_by_id(request, dealer_id):
         # If the dealer is not found, return an error message
         return HttpResponse('Dealer not found', status=404)
 
-# ... [any other code that might be below] ...def contact(request):
-    return render(request, 'djangoapp/contact.html')
-
+def list_dealerships(request):
+    """View a list of all car dealerships."""
+    dealerships = CarDealerModel.objects.all()
+    return render(request, 'djangoapp/list_dealerships.html', {'dealerships': dealerships})
