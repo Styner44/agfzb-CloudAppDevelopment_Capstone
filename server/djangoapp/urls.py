@@ -18,4 +18,7 @@ urlpatterns = [
     path('dealer/<int:dealer_id>/', views.get_dealer_by_id, name='dealer_details'),
     path('dealer/<int:dealer_id>/add-review/', views.add_review, name="add_review"),
     path('dealership/<int:dealer_id>/', views.view_dealership, name='view_dealership'),
+    path('login/', views.login_view, name='login'),  # login_view is the view function for login
+    path('some_path/', views.some_function, name='some_function'),
+    path('register/', views.register, name='register'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

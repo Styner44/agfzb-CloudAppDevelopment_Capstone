@@ -1,15 +1,14 @@
-"""
-This module contains views for adding reviews and getting dealer details in a Django application.
-"""
 # This module contains views for adding reviews and getting dealer details in a Django application.
 from datetime import datetime
 import logging
 import requests
+
 from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
-from djangoapp.models import CarDealerModel, Car
-from djangoapp.models import Car
+from djangoapp.models import CarDealerModel, Car  # Import the CarDealerModel and Car models
 
 # Logger setup
 logger = logging.getLogger(__name__)
@@ -19,6 +18,19 @@ def about(request):
     Renders the about page.
     """
     return render(request, 'djangoapp/about.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('index')
+        else:
+            return render(request, 'login.html', {'error': 'Invalid username or password'})
+    else:
+        return render(request, 'login.html')
 
 @login_required
 def add_review(request, dealer_id):
@@ -110,10 +122,10 @@ def get_dealerships(request):
     context['dealership_list'] = dealerships
     return render(request, 'djangoapp/index.html', context)
 
-def get_dealer_details(request,  dealer_id):
+
+def get_dealer_details(request, dealer_id):
     """Get details of a car dealer and their reviews."""
     if request.method == 'GET':
-        dealer_id = request.GET.get('dealer_id')
         if not dealer_id:
             return HttpResponseBadRequest('Missing dealer_id')
 
@@ -151,7 +163,7 @@ def analyze_review_sentiments(review_text):
         return response.json().get('sentiment', {}).get('document', {}).get('label', 'neutral')
     return "neutral"
 
-# Add the new function here
+@login_required
 def get_dealer_by_id(request, dealer_id):
     """
     Fetches details for a specific dealer by ID.
@@ -166,14 +178,48 @@ def get_dealer_by_id(request, dealer_id):
         return HttpResponse('Dealer not found', status=404)
 
 def get_dealerships(request):
-    # Other code...
-    dealerships = get_dealers_from_cf()  # Remove the argument here
-    # Other code...
+    """
+    Retrieves a list of dealerships.
+    """
+    context = {}
 
-def get_dealers_from_cf():
-    """Fetches dealerships from a cloud function."""
+    # Replace the old URL with the newly copied endpoint URL
     dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
+
+    dealerships = get_dealers_from_cf(dealerships_url)  # Pass the updated URL
+    context['dealership_list'] = dealerships
+    return render(request, 'djangoapp/index.html', context)
+
+def get_dealers_from_cf(dealerships_url):
+    """Fetches dealerships from a cloud function."""
     response = requests.get(dealerships_url, timeout=10)
     if response.status_code == 200:
         return response.json()
     return []
+
+def list_dealerships(request):
+    # Fetch the list of dealerships from your database or wherever you store the data
+    dealerships = Dealer.objects.all()  # Modify this based on your data retrieval logic
+
+    # Render the template with the list of dealerships
+    return render(request, 'djangoapp/list_dealerships.html', {'dealerships': dealerships})
+
+    # Other view functions...
+
+def some_function(request):
+    if request.method == 'POST':
+        # some code here
+        return HttpResponse('POST request received')
+
+# More view functions...
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('djangoapp:index')  # Replace 'index' with the name of your homepage view
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
