@@ -165,10 +165,10 @@ def get_dealer_by_id(request, dealer_id):
         # If the dealer is not found, return an error message
         return HttpResponse('Dealer not found', status=404)
 
-def list_dealerships(request):
-    """View a list of all car dealerships."""
-    dealerships = CarDealerModel.objects.all()
-    return render(request, 'djangoapp/list_dealerships.html', {'dealerships': dealerships})
+def get_dealerships(request):
+    # Other code...
+    dealerships = get_dealers_from_cf()  # Remove the argument here
+    # Other code...
 
 def get_dealers_from_cf():
     """Fetches dealerships from a cloud function."""
@@ -177,4 +177,3 @@ def get_dealers_from_cf():
     if response.status_code == 200:
         return response.json()
     return []
-
