@@ -1,20 +1,22 @@
 """
 This module contains views for adding reviews and getting dealer details in a Django application.
 """
-
+# This module contains views for adding reviews and getting dealer details in a Django application.
 from datetime import datetime
 import logging
 import requests
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
-from djangoapp.models import CarDealerModel
-from djangoapp.models import Car, CarDealerModel  # Added CarDealerModel here
+from djangoapp.models import CarDealerModel, Car
 
 # Logger setup
 logger = logging.getLogger(__name__)
 
 def about(request):
+    """
+    Renders the about page.
+    """
     return render(request, 'djangoapp/about.html')
 
 @login_required
@@ -66,7 +68,8 @@ def process_add_review_post(request, dealer_id):
             return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
         
         logger.error('Failed to post review. Status code: %s', response.status_code)
-        return HttpResponse(f'Failed to post review. Status code: {response.status_code}', status=response.status_code)
+        return HttpResponse(f'Failed to post review. Status code: {response.status_code}',
+                            status=response.status_code)
 
     except Car.DoesNotExist:
         logger.error('Invalid car ID')
@@ -79,6 +82,9 @@ def process_add_review_post(request, dealer_id):
         return HttpResponse(f'Error posting review: {str(e)}', status=500)
 
 def contact(request):
+    """
+    Renders the contact page.
+    """
     return render(request, 'djangoapp/contact.html')
 
 def view_dealership(request, dealer_id):
@@ -91,8 +97,15 @@ def view_dealership(request, dealer_id):
     return render(request, 'djangoapp/view_dealership.html', {'dealership': dealership})
 
 def get_dealerships(request):
+    """
+    Retrieves a list of dealerships.
+    """
     context = {}
-    dealerships = get_dealers_from_cf()  # Assuming this function fetches dealerships
+    
+    # Replace the old URL with the newly copied endpoint URL
+    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
+    
+    dealerships = get_dealers_from_cf(dealerships_url)  # Pass the updated URL
     context['dealership_list'] = dealerships
     return render(request, 'djangoapp/index.html', context)
 
@@ -156,10 +169,10 @@ def list_dealerships(request):
     dealerships = CarDealerModel.objects.all()
     return render(request, 'djangoapp/list_dealerships.html', {'dealerships': dealerships})
 
-def get_dealers_from_cf():
+def get_dealers_from_cf(dealerships_url):
     """Fetches dealerships from a cloud function."""
-    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
     response = requests.get(dealerships_url, timeout=10)
     if response.status_code == 200:
         return response.json()
     return []
+
