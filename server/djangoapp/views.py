@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from djangoapp.models import CarDealerModel, Car
+from djangoapp.models import Car
 
 # Logger setup
 logger = logging.getLogger(__name__)
@@ -77,7 +78,7 @@ def process_add_review_post(request, dealer_id):
     except ValueError:
         logger.error('Invalid date format')
         return HttpResponseBadRequest('Invalid date format')
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         logger.error('Error posting review: %s', str(e))
         return HttpResponse(f'Error posting review: {str(e)}', status=500)
 
@@ -169,8 +170,9 @@ def list_dealerships(request):
     dealerships = CarDealerModel.objects.all()
     return render(request, 'djangoapp/list_dealerships.html', {'dealerships': dealerships})
 
-def get_dealers_from_cf(dealerships_url):
+def get_dealers_from_cf():
     """Fetches dealerships from a cloud function."""
+    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
     response = requests.get(dealerships_url, timeout=10)
     if response.status_code == 200:
         return response.json()
