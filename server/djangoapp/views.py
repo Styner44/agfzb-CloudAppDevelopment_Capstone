@@ -110,12 +110,17 @@ def view_dealership(request, dealer_id):
     return render(request, 'djangoapp/view_dealership.html', {'dealership': dealership})
 
 def get_dealerships(request):
+    logger.info("get_dealerships view called")  # Log when the function is called
     context = {}
-    # Use the Port 3000 URL that points to your dealership data endpoint
-    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
+    dealerships_url = 'https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get'
     dealerships = get_dealers_from_cf(dealerships_url)
+    if dealerships:
+        logger.info(f"Dealerships fetched successfully: {dealerships}")  # Log fetched data
+    else:
+        logger.error("No dealerships fetched")
     context['dealership_list'] = dealerships
     return render(request, 'djangoapp/index.html', context)
+
 
 def get_dealer_details(request, dealer_id):
     """Get details of a car dealer and their reviews."""
@@ -171,26 +176,21 @@ def get_dealer_by_id(request, dealer_id):
         # If the dealer is not found, return an error message
         return HttpResponse('Dealer not found', status=404)
 
-def get_dealerships(request):
-    """
-    Retrieves a list of dealerships.
-    """
-    context = {}
-
-    # Replace the old URL with the newly copied endpoint URL
-    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
-
-    dealerships = get_dealers_from_cf(dealerships_url)  # Pass the updated URL
-    context['dealership_list'] = dealerships
-    return render(request, 'djangoapp/index.html', context)
-
 def get_dealers_from_cf(dealerships_url):
-    response = requests.get(dealerships_url, timeout=10)
-    if response.status_code == 200:
+    try:
+        response = requests.get(dealerships_url, timeout=10)
+        response.raise_for_status()  # Will raise an HTTPError for bad HTTP status codes
         dealerships = response.json()
         logger.info(f"Dealerships received: {dealerships}")
         return dealerships
-    logger.error(f"Failed to receive dealerships, status code {response.status_code}")
+    except requests.exceptions.HTTPError as errh:
+        logger.error(f"Http Error: {errh}")
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(f"Error Connecting: {errc}")
+    except requests.exceptions.Timeout as errt:
+        logger.error(f"Timeout Error: {errt}")
+    except requests.exceptions.RequestException as err:
+        logger.error(f"Error: {err}")
     return []
 
 def list_dealerships(request):
