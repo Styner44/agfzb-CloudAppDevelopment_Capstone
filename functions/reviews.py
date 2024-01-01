@@ -22,13 +22,13 @@ def get_reviews():
     
     # Check if id parameter is missing
     if dealership_id is None:
-        return jsonify({error: Missing id parameter in the URL}), 400
+        return jsonify({"error": "Missing id parameter in the URL"}), 400
    
     # Convert the id parameter to an integer (assuming id should be an integer)
     try:
         dealership_id = int(dealership_id)
     except ValueError:
-        return jsonify({error: id parameter must be an integer}), 400
+        return jsonify({"error": "id parameter must be an integer"}), 400
    
     # Define the query based on the 'dealership' ID
     selector = {
@@ -65,7 +65,7 @@ def post_review():
     # Save the review data as a new document in the Cloudant database
     db.create_document(review_data)
     
-    return jsonify({message: Review posted successfully}), 201
+    return jsonify({"message": "Review posted successfully"}), 201
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
