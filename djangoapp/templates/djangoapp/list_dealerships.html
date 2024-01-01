@@ -1,0 +1,9 @@
+<!-- djangoapp/templates/djangoapp/list_dealerships.html -->
+<h1>Dealerships</h1>
+
+{% for dealer in dealerships %}
+    <h2>{{ dealer.name }}</h2>
+    <p>City: {{ dealer.city }}</p>
+    <p>State: {{ dealer.state }}</p>
+    <!-- Add other fields as needed -->
+{% endfor %}
