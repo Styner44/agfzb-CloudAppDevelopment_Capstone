@@ -78,10 +78,11 @@ def post_request(url, json_payload, auth_needed=True, **kwargs):
 
 # ... [The rest of your existing methods]
 
-def get_dealers_from_cf(url):
+def get_dealers_from_cf():
     """
     Get the list of dealers from the specified URL.
     """
+    url = 'https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get'
     try:
         data = get_request(url)
         dealers = []
