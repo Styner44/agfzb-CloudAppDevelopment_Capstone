@@ -88,7 +88,7 @@ def get_dealers_from_cf():
         dealers = []
         if 'docs' in data:
             for dealer in data['docs']:  # This line might be different based on your data structure
-                dealer_doc = dealer  # Updated line as per your instruction
+                dealer_doc = dealer  # Updated line as per my instruction
                 # The rest of your code that processes dealer_doc
                 dealers.append({
                     'id': dealer_doc['id'],
