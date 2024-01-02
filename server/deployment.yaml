@@ -20,10 +20,10 @@ spec:
         run: dealership
     spec:
       containers:
-        - image: us.icr.io/sn-labs-ahmetulku98/dealership:latest
-          imagePullPolicy: Always
-          name: dealership
-          ports:
-            - containerPort: 8000
-              protocol: TCP
+      - image: us.icr.io/sn-labs-kstiner101/dealership:latest
+        imagePullPolicy: Always
+        name: dealership
+        ports:
+        - containerPort: 8000
+          protocol: TCP
       restartPolicy: Always
