@@ -112,7 +112,7 @@ def view_dealership(request, dealer_id):
 def get_dealerships(request):
     logger.info("get_dealerships view called")  # Log when the function is called
     context = {}
-    dealerships_url = 'https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get'
+    dealerships_url = 'https://kstiner101-3000.theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get'
     dealerships = get_dealers_from_cf(dealerships_url)
     if dealerships:
         logger.info(f"Dealerships fetched successfully: {dealerships}")  # Log fetched data
