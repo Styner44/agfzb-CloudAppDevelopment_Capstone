@@ -29,11 +29,15 @@
 
 {% block javascript %}
 <script>
-  $(function() {
-    $('#table').bootstrapTable()
-  })
+    $(document).ready(function() {
+        $('#table').bootstrapTable({
+            filterControl: true,
+            filterShowClear: true
+        });
+    });
 </script>
-{% endblock %} -->
+{% endblock %}
+
 
 <!-- {% extends "djangoapp/layout.html" %}
 
