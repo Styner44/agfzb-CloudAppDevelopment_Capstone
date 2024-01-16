@@ -111,10 +111,14 @@ def view_dealership(request, dealer_id):
 
 def get_dealerships(request):
     context = {}
-    # Use the Port 3000 URL that points to your dealership data endpoint
-    dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
-    dealerships = get_dealers_from_cf(dealerships_url)
-    context['dealership_list'] = dealerships
+    try:
+        # Use the Port 3000 URL that points to your dealership data endpoint
+        dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
+        dealerships = get_dealers_from_cf(dealerships_url)
+        context['dealership_list'] = dealerships
+    except Exception as e:
+        context['error'] = str(e)
+    
     return render(request, 'djangoapp/index.html', context)
 
 def get_dealer_details(request, dealer_id):
