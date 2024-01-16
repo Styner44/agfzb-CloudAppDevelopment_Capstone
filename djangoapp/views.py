@@ -110,7 +110,10 @@ def view_dealership(request, dealer_id):
     return render(request, 'djangoapp/view_dealership.html', {'dealership': dealership})
 
 def get_dealerships(request):
-    context = {}
+      # ... your code to fetch dealership data ...
+    dealership_data = some_function_to_get_data()
+    print(dealership_data)  # This line will print the dealership data
+    context = {'dealership_list': dealership_data}
     try:
         # Use the Port 3000 URL that points to your dealership data endpoint
         dealerships_url = "https://kstiner101-3000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
@@ -185,6 +188,10 @@ def get_dealers_from_cf(dealerships_url):
     return []
 
 def list_dealerships(request):
+    dealership_data = another_function_to_get_data()
+    print(dealership_data)  # Printing the dealership data for debugging
+    
+    context = {'dealerships': dealership_data}
     # Fetch the list of dealerships from your database or wherever you store the data
     dealerships = Dealer.objects.all()  # Modify this based on your data retrieval logic
 
